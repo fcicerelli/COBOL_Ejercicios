@@ -15,10 +15,8 @@
        77 RESIDUO PIC 99.
        PROCEDURE DIVISION.
        MAIN-PROCEDURE.
-            DISPLAY "Escriba el numerador: ".
-            ACCEPT X.
-            DISPLAY "Escriba el denominador: ".
-            ACCEPT Y.
+            move 50 to X.
+            move 30 to Y.
             DIVIDE X BY Y GIVING Z REMAINDER RESIDUO.
             DISPLAY "El valor de la division es: "Z.
             DISPLAY "El residuo de la division es: "RESIDUO.
