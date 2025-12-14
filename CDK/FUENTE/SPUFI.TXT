@@ -1,0 +1,140 @@
+--  COMANDOS BASICOS PARA EJECUTAR SENTENCIAS SQL - CAPACITACION -      00102500
+--  OWNER BD: KC02803                                                   00102601
+--  TABLAS: TBCURCLI / TBCURCTA                                         00102700
+--                                                                      00102852
+--    PARCIAL                                                           00102963
+--             SELECT   TIPCUEN,                                        00103067
+--                      NROCUEN,                                        00103167
+--                      SUCUEN,                                         00103267
+--                      NROCLI,                                         00103367
+--                      SALDO,                                          00103567
+--                      FECSAL                                          00103667
+--                FROM  KC02803.TBCURCTA                                00103767
+--                    WHERE FECSAL < '2025-06-05'                       00104167
+--                    ORDER BY SUCUEN ASC, TIPCUEN ASC                  00104267
+--             ;                                                        00104367
+            SELECT NROCLI, NOMAPE, FECNAC, SEXO                         00104468
+             FROM KC02803.TBCURCLI                                      00104568
+                  ORDER BY FECNAC ASC, SEXO ASC                         00104668
+             ;                                                          00104768
+--                                                                      00104868
+--     SELECT TIPDOC, NRODOC, NROCLI, NOMAPE, FECNAC, SEXO              00104968
+--     INTO :WT-TIPDOC, :WT-NRODOC, :WT-NROCLI, WT-NOMAPE               00105055
+--     FROM KC02803.TBCURCLI                                            00105168
+--          ORDER BY FECNAC ASC, SEXO ASC                               00105268
+--     ;                                                                00105368
+--                                                                      00105455
+--     SELECT NROCLI, SUCUEN                                            00105556
+--     INTO WS-NROCLI, :WS-SUCUEN                                       00105655
+--     FROM KC02803.TBCURCTA                                            00105756
+--          ORDER BY NROCLI                                             00105856
+--     ;                                                                00105956
+--                                                                      00106055
+--  LEFT JOIN                                                           00106152
+--         SELECT A.NROCLI,                                             00106261
+--                A.SUCUEN,                                             00106361
+--                B.TIPDOC,                                             00106461
+--                B.NRODOC,                                             00106561
+--                B.NROCLI,                                             00106661
+--                B.NOMAPE                                              00106761
+--            FROM  KC02803.TBCURCTA A                                  00106861
+--                 LEFT JOIN                                            00106961
+--                   KC02803.TBCURCLI B                                 00107061
+--                ON  A.NROCLI = B.NROCLI                               00107161
+--                ORDER BY A.NROCLI ASC                                 00107261
+--         ;                                                            00107361
+--                                                                      00107438
+--  INNER JOIN                                                          00107539
+--         SELECT A.TIPCUEN,                                            00107649
+--                A.NROCUEN,                                            00107749
+--                A.SUCUEN,                                             00107849
+--                A.NROCLI,                                             00107949
+--                B.NOMAPE,                                             00108049
+--                A.SALDO,                                              00108149
+--                A.FECSAL                                              00108249
+--            FROM  KC02803.TBCURCTA A                                  00108349
+--                 INNER JOIN                                           00108449
+--                   KC02803.TBCURCLI B                                 00108549
+--                ON  A.NROCLI = B.NROCLI                               00108649
+--                WHERE A.SALDO > 0                                     00108749
+--                ORDER BY SUCUEN ASC                                   00108849
+--         ;                                                            00108949
+--                                                                      00109038
+--                                                                      00109128
+--        INSERT                                                        00109237
+--         INTO KC02803.TBCURCLI                                        00109337
+--          (TIPDOC, NRODOC, NROCLI, NOMAPE, FECNAC, SEXO)              00109437
+--            VALUES ('XX',                                             00109537
+--                    98765432109,                                      00109637
+--                    777,                                              00109737
+--                    'FIORELA FLORES DEL FIORE',                       00109837
+--                    '2000-11-12',                                     00109937
+--                    'F')                                              00110037
+--         ;                                                            00110137
+--                                                                      00110223
+--           SELECT *                                                   00110358
+--           FROM KC02803.TBCURCLI                                      00110458
+--           ;                                                          00110558
+--              SELECT TIPDOC, NRODOC, NROCLI                           00110626
+--              INTO :WT-TIPDOC, :WT-NRODOC, :WT-NROCLI                 00110725
+--              FROM KC02803.TBCURCLI                                   00110826
+--                   WHERE  NROCLI = 10                                 00110926
+--              ;                                                       00111026
+--                                                                      00111103
+--         SELECT TIPCUEN, NROCUEN, NROCLI                              00111223
+--         INTO :WS-TIPCUEN, :WS-NROCUEN, :WS-NROCLI                    00111319
+--         FROM KC02803.TBCURCTA                                        00111423
+--              WHERE  NROCLI = 123                                     00111522
+--         ;                                                            00111623
+--                                                                      00111717
+--          SELECT *                                                    00111814
+--          FROM  KC02803.TBCURCLI                                      00111914
+--          WHERE TIPDOC = 'PA' OR TIPDOC = 'DU'                        00112014
+--          ORDER BY NROCLI DESC                                        00112114
+--                                                                      00112214
+--          ;                                                           00112322
+--                                                                      00112400
+--   +++ SELECCION DE TODAS LAS COLUMNAS DE UNA TABLA +++               00112500
+--   +++                                                                00112600
+--                SELECT *                                              00112700
+--                  FROM OWNERBD.TABLA                                  00112800
+--                  WHERE NOMCOL = CONDICION                            00112900
+--                ;                                                     00113000
+--                                                                      00113100
+--   +++ SELECCIONA EL VALOR MAXIMO DE UNA COLUMNA Y LE ASIGNA UN       00113200
+--   +++ NOMBRE PARA LISTARLO ORDENANDO EL LISTADO DE MANERA DESC POR   00113300
+--   +++ UNA COLUMNA.  +++                                              00113400
+--                                                                      00113500
+--                SELECT MAX(NOMCOL) AS MAXIMO                          00113603
+--                  FROM OWNERBD.TABLA                                  00113703
+--                  WHERE NOMCOL = CONDICION                            00113803
+--                  ORDER BY PER_NOMAPE DESC                            00113903
+--                 ;                                                    00114003
+--                                                                      00114100
+--   +++ SELECCIONA UNA COLUMNA DE LA TABLA B DONDE EL VALOR            00114200
+--                                                                      00114300
+--                SELECT   B.NOMCOL                                     00114400
+--                  FROM OWNERBD.TABLA A                                00114500
+--                       LEFT  OUTER JOIN                               00114600
+--                       OWNERBD.TABLA B                                00114700
+--                       ON A.NROCLI = B.NROCLI                         00114800
+--                                                                      00114958
+                SELECT A.NROCLI,                                        00115057
+                       A.SUCUEN,                                        00116057
+                       A.TIPCUEN,                                       00116157
+                       A.NROCUEN,                                       00116257
+                       A.SALDO,                                         00116357
+                       A.FECSAL,                                        00116457
+                       B.TIPDOC,                                        00117057
+                       B.NRODOC,                                        00118057
+                       B.NROCLI,                                        00119057
+                       B.NOMAPE,                                        00119157
+                       B.FECNAC,                                        00119257
+                       B.SEXO                                           00119357
+                   FROM  KC02803.TBCURCTA A                             00119557
+                        INNER JOIN                                      00119657
+                          KC02803.TBCURCLI B                            00119757
+                       ON  A.NROCLI = B.NROCLI                          00119857
+                       ORDER BY A.SUCUEN ASC, A.TIPCUEN ASC             00119960
+--        ROOLBACK      ;                                               00120009
+

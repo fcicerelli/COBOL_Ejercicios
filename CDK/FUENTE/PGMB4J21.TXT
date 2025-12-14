@@ -1,0 +1,254 @@
+       IDENTIFICATION DIVISION.                                         00010000
+      *                                                        *        00010500
+        PROGRAM-ID PGMB4J21.                                            00011000
+      **********************************************************        00012000
+      *                                                        *        00017800
+      *  EJEMPLO DE LLAMADO A RUTINA DINAMICO Y ESTATICO       *        00017900
+      *                                                        *        00018100
+      *                ESQUELETO PGMCALL                       *        00018200
+      *                          JCLB4J21                      *        00018303
+      *                                                        *        00018400
+      **********************************************************        00018500
+      *      MANTENIMIENTO DE PROGRAMA                         *        00018600
+      **********************************************************        00019000
+      *  FECHA   *    DETALLE        * COD *                            00019100
+      **************************************                            00019200
+      *          *                   *     *                            00019300
+      *          *                   *     *                            00019400
+      *          *                   *     *                            00019500
+      *          *                   *     *                            00019600
+      *          *                   *     *                            00019700
+      **************************************                            00019800
+      *                                PGMISJ21  PONER CLAVE  CORRECTA  00019903
+       ENVIRONMENT DIVISION.                                            00020000
+       INPUT-OUTPUT SECTION.                                            00020200
+       FILE-CONTROL.                                                    00020300
+             SELECT NOVEDAD ASSIGN DDNOVED                              00020403
+                    ORGANIZATION IS INDEXED                             00020503
+                    ACCESS MODE  IS SEQUENTIAL                          00020703
+                    RECORD KEY   IS CLI-KEY                             00020803
+                    FILE STATUS IS WS-NOV-CODE.                         00020903
+                                                                        00022000
+       DATA DIVISION.                                                   00039000
+       FILE SECTION.                                                    00039100
+       FD NOVEDAD.                                                      00039203
+      *     BLOCK CONTAINS 0 RECORDS                                    00039303
+      *     RECORDING MODE IS F.                                        00039403
+                                                                        00039503
+       01 REG-NOVED.                                                    00039603
+          03  CLI-KEY     PIC X(17).                                    00039903
+          03  FILLER      PIC X(227).                                   00040003
+                                                                        00040100
+                                                                        00040900
+      **************************************                            00041000
+       WORKING-STORAGE SECTION.                                         00041100
+      **************************************                            00041200
+       77  FILLER        PIC X(26) VALUE '* INICIO WORKING-STORAGE *'.  00041300
+                                                                        00041400
+       77  FILLER        PIC X(26) VALUE '* CODIGOS RETORNO FILES  *'.  00041500
+       77  WS-NOV-CODE      PIC XX    VALUE SPACES.                     00041600
+       77  WS-PGMRUT        PIC X(8)  VALUE 'PGMRUT'.                   00041700
+      **************************************                            00041800
+                                                                        00046000
+       01  WS-STATUS-NOV    PIC X.                                      00047000
+           88  WS-FIN-NOV             VALUE 'Y'.                        00048000
+           88  WS-NO-FIN-NOV          VALUE 'N'.                        00049000
+       77  FILLER         PIC X(15)   VALUE "FECHA PROCESO: ".          00050000
+       01  WS-FECHA.                                                    00051000
+           03  WS-ANIO    PIC 9(02)   VALUE ZEROS.                      00052000
+           03  WS-MES     PIC 9(02)   VALUE ZEROS.                      00053000
+           03  WS-DIA     PIC 9(02)   VALUE ZEROS.                      00054000
+                                                                        00055000
+      **************************************                            00060000
+      *         LAYOUT NOVEDAD             *                            00070000
+      **************************************                            00080000
+       01  WS-REG-NOVEDAD.                                              00090000
+                                                                        00100000
+           03  WS-NOV-TIPO         PIC XX       VALUE SPACES.           00110000
+                                                                        00110100
+               88 WS-DU          VALUE 'DU'.                            00110200
+               88 WS-CI          VALUE 'CI'.                            00110300
+               88 WS-PA          VALUE 'PA'.                            00110400
+               88 WS-PE          VALUE 'PE'.                            00110500
+                                                                        00110600
+           03  WS-NOV-NRO          PIC 9(11)   VALUE ZEROS.             00110700
+           03  WS-NOV-NOMBRE       PIC X(30)   VALUE SPACES.            00110800
+           03  WS-ESTADO-CIVIL     PIC X(10)   VALUE SPACES.            00110900
+           03  WS-SEXO             PIC X       VALUE SPACES.            00111000
+           03  FILLER              PIC X(39)   VALUE SPACES.            00111200
+                                                                        00111300
+      * CONTADOR DE LEIDOS                                              00111400
+       77  WS-CANT-NOV             PIC 9(3)      VALUE ZEROS.           00111600
+       77  WS-NOV-EDIT             PIC Z(3)      VALUE ZEROS.           00111700
+       77  WS-NOV-TIPO-ANT         PIC X(2)      VALUE SPACES.          00111800
+       77  WS-CONTADOR-TIPO        PIC 9(2)      VALUE ZEROS.           00111900
+                                                                        00112000
+      * CONTADOR DE REGISTROS QUE CUMPLEN LA CONDICION                  00112100
+       77  WS-CANT-CONDICION       PIC 9(3)      VALUE ZEROS.           00112200
+       77  WS-COND-EDIT            PIC Z(3)      VALUE ZEROS.           00112300
+                                                                        00112400
+      **************************************                            00112500
+       LINKAGE SECTION.                                                 00112600
+       01  LK-COMUNICACION.                                             00112700
+           03  LK-SIGLO            PIC 9(02).                           00112800
+           03  LK-ANIO             PIC 9(02).                           00112900
+           03  LK-MES              PIC 9(02).                           00113000
+           03  LK-DIA              PIC 9(02).                           00113100
+           03  FILLER              PIC X(22).                           00113200
+      **************************************                            00114000
+                                                                        00116000
+      ***************************************************************.  00120000
+       PROCEDURE DIVISION USING LK-COMUNICACION.                        00130000
+      **************************************                            00140000
+      *                                    *                            00150000
+      *  CUERPO PRINCIPAL DEL PROGRAMA     *                            00160000
+      *                                    *                            00170000
+      **************************************                            00180000
+       MAIN-PROGRAM.                                                    00190000
+                                                                        00200000
+           PERFORM 1000-INICIO  THRU   F-1000-INICIO.                   00210000
+                                                                        00220000
+           PERFORM 2000-PROCESO  THRU  F-2000-PROCESO                   00230000
+                   UNTIL WS-FIN-NOV.                                    00240000
+                                                                        00250000
+           PERFORM 9999-FINAL    THRU  F-9999-FINAL.                    00260000
+                                                                        00270000
+       F-MAIN-PROGRAM. GOBACK.                                          00280000
+                                                                        00290000
+      **************************************                            00300000
+      *                                    *                            00310000
+      *  CUERPO INICIO APERTURA ARCHIVOS   *                            00320000
+      *                                    *                            00330000
+      **************************************                            00340000
+       1000-INICIO.                                                     00350000
+           ACCEPT WS-FECHA FROM DATE.                                   00351000
+           SET WS-NO-FIN-NOV TO TRUE.                                   00360000
+                                                                        00370000
+           OPEN INPUT  NOVEDAD.                                         00410003
+                                                                        00410100
+                                                                        00413000
+           IF WS-NOV-CODE IS NOT EQUAL '00'                             00420003
+              DISPLAY '* ERROR EN OPEN NOVEDAD = ' WS-NOV-CODE          00430003
+              MOVE 9999 TO RETURN-CODE                                  00440003
+              SET  WS-FIN-NOV     TO TRUE                               00450003
+           END-IF.                                                      00460003
+                                                                        00470000
+           PERFORM 2500-LEER     THRU F-2500-LEER.                      00480003
+           MOVE WS-NOV-TIPO       TO WS-NOV-TIPO-ANT.                   00490003
+           PERFORM 1200-CALL-FECHA   THRU F-1200-CALL-FECHA.            00500000
+                                                                        00580000
+       F-1000-INICIO.   EXIT.                                           00660000
+                                                                        00670000
+      * INVOCA RUTINA DE FECHAS PARA OBTENER ÚLTIMO DIA DEL MES         00670100
+       1200-CALL-FECHA.                                                 00671000
+      *       DISPLAY 'FECHA DEL SISTEMA -> ' WS-FECHA                  00671103
+              IF WS-MES = 01                                            00672003
+                 MOVE 12 TO WS-MES                                      00672101
+                 SUBTRACT  1 FROM WS-ANIO                               00672201
+              ELSE                                                      00672401
+                 SUBTRACT  1 FROM WS-MES                                00672503
+              END-IF                                                    00672601
+                                                                        00672701
+              MOVE SPACES           TO    LK-COMUNICACION               00673000
+              MOVE 20         TO  LK-SIGLO                              00674000
+              MOVE WS-ANIO    TO  LK-ANIO                               00675000
+              MOVE WS-MES     TO  LK-MES                                00676000
+                                                                        00676100
+      * INVOCA CALL ESTATICO                                            00677000
+      *       CALL  'PGMRUT'   USING LK-COMUNICACION                    00677100
+                                                                        00677200
+      * INVOCA CALL DINAMICO                                            00677300
+              CALL  WS-PGMRUT  USING LK-COMUNICACION                    00677400
+                                                                        00677500
+              IF RETURN-CODE    EQUAL    05                             00678000
+                SET  WS-FIN-NOV   TO TRUE                               00679000
+                DISPLAY  'ERROR RUTINA FECHA: 05'                       00679100
+              END-IF                                                    00679202
+                                                                        00679300
+      *       DISPLAY 'LK-COMUNICACION' LK-COMUNICACION                 00679503
+              .                                                         00679602
+       F-1200-CALL-FECHA. EXIT.                                         00679700
+      **************************************                            00680000
+      *                                    *                            00690000
+      *  CUERPO PRINCIPAL DE PROCESOS      *                            00700000
+      *                                    *                            00730000
+      **************************************                            00740000
+       2000-PROCESO.                                                    00750000
+                                                                        00764003
+           IF WS-NOV-TIPO  EQUAL WS-NOV-TIPO-ANT                        00769003
+              ADD 1 TO WS-CONTADOR-TIPO                                 00770003
+           ELSE                                                         00780003
+                                                                        00780200
+                                                                        00780300
+              PERFORM  3000-MOSTRAR-TOTAL THRU                          00790003
+                     F-3000-MOSTRAR-TOTAL                               00800003
+              INITIALIZE WS-CONTADOR-TIPO                               00810003
+              MOVE WS-NOV-TIPO    TO    WS-NOV-TIPO-ANT                 00811003
+           END-IF.                                                      00820003
+                                                                        00830000
+           PERFORM 2500-LEER     THRU F-2500-LEER.                      01051903
+                                                                        01052000
+       F-2000-PROCESO. EXIT.                                            01052100
+                                                                        01052200
+                                                                        01060100
+      **************************************                            01060200
+      *  LEER REGISTROS                    *                            01060300
+      **************************************                            01060400
+       2500-LEER.                                                       01061000
+           READ NOVEDAD   INTO WS-REG-NOVEDAD                           01061103
+                                                                        01061300
+           EVALUATE WS-NOV-CODE                                         01061403
+             WHEN '00'                                                  01061503
+                  DISPLAY WS-REG-NOVEDAD                                01061603
+                            ADD 1 TO WS-CANT-NOV                        01061703
+              WHEN '10'                                                 01061803
+              SET WS-FIN-NOV  TO TRUE                                   01061900
+                                                                        01062000
+           WHEN OTHER                                                   01062103
+              DISPLAY '* ERROR EN LECTURA NOVEDAD = ' WS-NOV-CODE       01062203
+              MOVE 9999 TO RETURN-CODE                                  01062303
+              SET WS-FIN-NOV  TO TRUE                                   01062403
+                                                                        01062500
+           END-EVALUATE.                                                01062603
+                                                                        01062703
+       F-2500-LEER. EXIT.                                               01063000
+                                                                        01063100
+       3000-MOSTRAR-TOTAL.                                              01064000
+           DISPLAY ' TOTAL TIPO DOCUMENTO: '  WS-NOV-TIPO               01064100
+                WS-CONTADOR-TIPO.                                       01064200
+                                                                        01064300
+       F-3000-MOSTRAR-TOTAL. EXIT.                                      01065000
+                                                                        01070000
+                                                                        01072000
+      **************************************                            01990000
+      *                                    *                            02000000
+      *  CUERPO FINAL CIERRE DE FILES      *                            02010000
+      *                                    *                            02020000
+      **************************************                            02030000
+       9999-FINAL.                                                      02040000
+                                                                        02050000
+           CLOSE NOVEDAD                                                02060003
+              IF WS-NOV-CODE IS NOT EQUAL '00'                          02070003
+                DISPLAY '* ERROR EN CLOSE NOVEDAD = '                   02080003
+                                            WS-NOV-CODE                 02090003
+                MOVE 9999 TO RETURN-CODE                                02100003
+                SET WS-FIN-NOV     TO TRUE                              02110003
+             END-IF.                                                    02120003
+                                                                        02120100
+                                                                        02130000
+      **************************************                            02300000
+      *   MOSTRAR TOTALES DE CONTROL                                    02310000
+      **************************************                            02320000
+                                                                        02330000
+                DISPLAY '                           ' .                 02340003
+                MOVE WS-CANT-NOV  TO    WS-NOV-EDIT.                    02341003
+                DISPLAY 'CANTIDAD REGISTROS LEIDOS  '   WS-NOV-EDIT.    02341103
+                                                                        02341203
+                MOVE WS-CANT-CONDICION TO WS-COND-EDIT.                 02341303
+                DISPLAY 'CANTIDAD QUE CUMPLEN COND  '                   02342003
+                                    WS-COND-EDIT.                       02343003
+                                                                        02380000
+       F-9999-FINAL.                                                    02390000
+           EXIT.                                                        02400000
+      *                                                                 02410000
+

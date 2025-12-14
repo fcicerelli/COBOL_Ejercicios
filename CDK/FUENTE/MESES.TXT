@@ -1,0 +1,42 @@
+//ALU99991 JOB CLASS=A,MSGCLASS=O,MSGLEVEL=(1,1),NOTIFY=&SYSUID
+//*********************************
+//*     GENERO ARCHIVO MESES      *
+//*********************************
+//STEP1       EXEC PGM=IEBGENER,COND=EVEN
+//SYSOUT    DD SYSOUT=*
+//*SYSUT1    DD DSN=ALU9999.VARIOS(GENER1),DISP=SHR
+//SYSUT1    DD DSN=DUMMY
+//SYSUT2    DD DSN=ALU9999.MESES,DISP=(,CATLG),
+//          UNIT=SYSDA,VOL=SER=ZACOB1,
+//          DCB=(LRECL=20,BLKSIZE=4000,RECFM=FB),
+//          SPACE=(TRK,(1,1),RLSE))
+//SYSPRINT  DD DUMMY
+//FIELD=(20,1,X,1)
+//SYSIN     DD *
+ENERO
+FEBRERO
+MARZO
+ABRIL
+MAYO
+JUNIO
+JULIO
+AGOSTO
+SETIEMBRE
+OCTUBRE
+NOVIEMBRE
+DICIEMBRE
+//*
+//
+//
+//*********************************
+//* EJEMPLO2 IMPRIMO DATO SELEC.  *
+//*********************************
+//STEP2       EXEC PGM=IEBGENER,COND=EVEN
+//SYSOUT    DD SYSOUT=*
+//SYSUT1    DD DSN=ALU9999.ENTRADA,DISP=SHR
+//SYSUT2    DD *
+//SYSIN     DD DSN=ALU9999.VARIOS(GENER2),DISP=SHR
+//**********************************************************
+//* FIELD=(LONG CAMPO, POS ENTRADA, CONVERSION, POS SALIDA)*
+//**********************************************************
+

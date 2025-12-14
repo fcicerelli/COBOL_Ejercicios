@@ -1,0 +1,322 @@
+       IDENTIFICATION DIVISION.                                         00010007
+        PROGRAM-ID PGMB3J21.                                            00020014
+      **************************************                            00030007
+      *                                    *                            00040007
+      *  PROGRAMA DE PRUEBA DE COMPILADOR  *                            00050007
+      *  A SU VEZ SIRVE COMO MODELO DB2    *                            00060007
+      *                                    *                            00070007
+      *  EJECUTAR CON     JCLDB2X1         *                            00071017
+      *  ESQUELETO        PGMDB210         *                            00072014
+      *                                    *                            00073013
+      **************************************                            00080007
+       ENVIRONMENT DIVISION.                                            00090007
+       INPUT-OUTPUT SECTION.                                            00100007
+       FILE-CONTROL.                                                    00110007
+             SELECT ENTRADA ASSIGN DDENTRA                              00120014
+                    FILE STATUS IS WS-ENT-CODE.                         00130014
+       DATA DIVISION.                                                   00140007
+       FILE SECTION.                                                    00150007
+       FD ENTRADA                                                       00160014
+            BLOCK CONTAINS 0 RECORDS                                    00170007
+            RECORDING MODE IS F.                                        00180007
+       01 REG-ENTRADA    PIC X(80).                                     00190014
+                                                                        00200007
+       WORKING-STORAGE SECTION.                                         00210007
+                                                                        00220007
+       77  FILLER        PIC X(26) VALUE '* INICIO WORKING-STORAGE *'.  00230007
+       77  FILLER        PIC X(26) VALUE '* CODIGOS RETORNO FILES  *'.  00240007
+       77  NOT-FOUND     PIC S9(9) COMP VALUE  +100.                    00250007
+       77  WS-SQLCODE    PIC +++999 USAGE DISPLAY VALUE ZEROS.          00260021
+       77  WS-ENT-CODE   PIC XX    VALUE SPACES.                        00270014
+       77  FILLER        PIC X(26) VALUE '* DESCRIPCION SQLCA      *'.  00280007
+                                                                        00281017
+                                                                        00282017
+      ******************FLAG FIN DE LECTURA*****************************00283017
+       77  WS-FLAG-FIN         PIC X       VALUE SPACES.                00284017
+           88 WS-SI-PROCESO                VALUE ' '.                   00285017
+           88 WS-FIN-PROCESO               VALUE 'F'.                   00286017
+                                                                        00287017
+      * CONTADORES                                                      00290017
+       77 WS-CONT-NOV-LEIDAS      PIC 9(03) VALUE ZEROS.                00291017
+       77 WS-CONT-NOV-ERROR       PIC 9(03) VALUE ZEROS.                00291117
+       77 WS-CONT-NOV-ALTAS       PIC 9(03) VALUE ZEROS.                00291217
+       77 WS-CONT-NOV-MODIF       PIC 9(03) VALUE ZEROS.                00291317
+                                                                        00292017
+      *****************************************************             00300007
+      * LAYOUT DEL REGISTRO DE CUENTAS                    *             00310007
+      *****************************************************             00320007
+      *    EXEC SQL  INCLUDE TBCURCTA   END-EXEC.                       00330016
+                                                                        00340007
+      *****************************************************             00341009
+      * LAYOUT DEL REGISTRO DE CLIENTES                   *             00342009
+      *****************************************************             00343009
+           EXEC SQL  INCLUDE TBCURCLI   END-EXEC.                       00344009
+                                                                        00345009
+       77  FILLER        PIC X(26) VALUE '* LAYOUT ENTRAD TITULOS  *'.  00350014
+       01  WS-TITULOS.                                                  00360007
+           02 FILLER     PIC X(6)   VALUE 'PROYNO'.                     00370007
+           02 FILLER     PIC X(26)  VALUE '   DESCRIPCION PROYECTO   '. 00380007
+           02 FILLER     PIC X(8)   VALUE '    HORA'.                   00390007
+                                                                        00400007
+       01  FILLER        PIC X(26) VALUE '* LAYOUT ENTRAD DETALLE  *'.  00410014
+       01  WS-DETALLE.                                                  00420007
+           02 WS-ENT-NUM PIC X(5)   VALUE SPACES.                       00430014
+           02 FILLER     PIC X      VALUE SPACES.                       00440007
+           02 WS-ENT-DES PIC X(30)  VALUE SPACES.                       00450014
+           02 FILLER     PIC X      VALUE SPACES.                       00460007
+           02 WS-ENT-HOR    PIC X(3)   VALUE SPACES.                    00470014
+                                                                        00480007
+           COPY NOVECLIE.                                               00490014
+                                                                        00500007
+      *****************************************************             00510007
+      * SQLCA COMMUNICATION AREA CON EL DB2               *             00520007
+      *****************************************************             00530007
+           EXEC SQL INCLUDE SQLCA  END-EXEC.                            00540007
+                                                                        00550007
+       01  FILLER        PIC X(26) VALUE '* FINAL  WORKING-STORAGE *'.  00560007
+      *****************************************************             00570007
+       PROCEDURE DIVISION.                                              00580007
+      **************************************                            00590007
+      *                                    *                            00600007
+      *  CUERPO PRINCIPAL DEL PROGRAMA     *                            00610007
+      *                                    *                            00620007
+      **************************************                            00630007
+       0000-MAIN-PROCESS.                                               00640007
+                                                                        00650007
+           PERFORM 1000-INICIO  THRU F-1000-INICIO.                     00660007
+                                                                        00670007
+           PERFORM 2000-PROCESO THRU F-2000-PROCESO                     00680017
+                   UNTIL WS-FIN-PROCESO.                                00681017
+                                                                        00690007
+           PERFORM 9999-FINAL   THRU F-9999-FINAL.                      00700007
+                                                                        00710007
+           EXEC SQL                                                     00711018
+                 ROLLBACK                                               00712018
+           END-EXEC.                                                    00713018
+                                                                        00714014
+           GOBACK.                                                      00720007
+                                                                        00730007
+      **************************************                            00740007
+      *                                    *                            00750007
+      *  CUERPO INICIO APERTURA FILES      *                            00760007
+      *                                    *                            00770007
+      **************************************                            00780007
+       1000-INICIO.                                                     00790007
+           OPEN INPUT ENTRADA.                                          00800017
+                                                                        00810007
+           IF WS-ENT-CODE IS NOT EQUAL '00'                             00820014
+              DISPLAY '* ERROR EN OPEN ENTRADA = ' WS-ENT-CODE          00830014
+              SET WS-FIN-PROCESO TO TRUE                                00840017
+              PERFORM 9999-FINAL THRU F-9999-FINAL                      00850007
+           END-IF.                                                      00860007
+                                                                        00960007
+       F-1000-INICIO. EXIT.                                             00970007
+                                                                        00980007
+      **************************************                            00990007
+      *                                    *                            01000007
+      *  CUERPO PRINCIPAL DE PROCESOS      *                            01010007
+      *  LECTURA TABLA TBCURCTA            *                            01020007
+      *  GRABACION ENTRAD CON LOS CAMPOS   *                            01030014
+      *            NROCLI                  *                            01040007
+      *                                    *                            01050007
+      **************************************                            01060007
+       2000-PROCESO.                                                    01070007
+                                                                        01070115
+      *****************************************************             01070215
+      * LECTURA DE ARCHIVO DE ENTRADA                     *             01070315
+      *****************************************************             01070415
+           READ ENTRADA INTO WS-REG-NOVECLI                             01071017
+                                                                        01072015
+             EVALUATE  WS-ENT-CODE                                      01073017
+                                                                        01074015
+               WHEN '00'                                                01075017
+                  PERFORM 2100-I-VALIDAR THRU 2100-F-VALIDAR            01076015
+                  ADD 1                  TO WS-CONT-NOV-LEIDAS          01077017
+      *           MOVE NOV-TIP-DOC       TO CLAVE-TIPO                  01078017
+      *           MOVE NOV-NRO-DOC       TO CLAVE-NUME                  01079017
+      *           MOVE WS-CLAVE-CLI      TO CLI-KEY                     01079117
+                                                                        01079215
+               WHEN '10'                                                01079317
+      *           DISPLAY 'ARCHIVO NOVEDAD VACIO: ' WS-ENT-CODE         01079418
+                  SET WS-FIN-PROCESO TO TRUE                            01079515
+                                                                        01079615
+               WHEN OTHER                                               01079715
+                  DISPLAY 'ERROR LECTURA NOVEDAD: ' WS-ENT-CODE         01079817
+                  SET WS-FIN-PROCESO TO TRUE                            01079915
+                                                                        01080015
+             END-EVALUATE.                                              01080115
+                                                                        01080215
+      *****************************************************             01081007
+      * ACCESO A TBCURCTA                                 *             01090011
+      *****************************************************             01100007
+      *         EXEC SQL SELECT TIPCUEN, NROCUEN, NROCLI                01110016
+      *              INTO :WS-TIPCUEN, :WS-NROCUEN, :WS-NROCLI          01120016
+      **             FROM KC02803.TBCURCTA                              01130016
+      **                  WHERE  NROCLI = 124                           01140016
+      **        END-EXEC.                                               01150016
+      **                                                                01160016
+      *         IF SQLCODE = NOT-FOUND                                  01170016
+      *            DISPLAY 'TABLA    VACÌA: '                           01180016
+      *         ELSE                                                    01190016
+      *             IF SQLCODE = 0                                      01200016
+      *               DISPLAY 'SQLCODE  = '    SQLCODE                  01201016
+      *                       '  TIPCUEN  = '  WS-TIPCUEN               01210016
+      *                       '  NROCUEN  = '  WS-NROCUEN               01210116
+      *                       '  NROCLI   = '  WS-NROCLI                01210216
+      *               DISPLAY ' '                                       01210316
+      *               MOVE WS-TIPCUEN       TO  WS-ENT-NUM              01211016
+      *               MOVE WS-NROCUEN       TO  WS-ENT-DES              01212016
+      *               MOVE WS-NROCLI        TO  WS-ENT-HOR              01213016
+      *               MOVE WS-DETALLE  TO WS-REG-ENTRADA                01220016
+      *               WRITE REG-ENTRADA FROM WS-REG-ENTADA              01230016
+      *             ELSE                                                01240016
+      *                  MOVE SQLCODE TO WS-SQLCODE                     01250016
+      *                  DISPLAY 'ERROR DB2 '  WS-SQLCODE               01260016
+      *         END-IF                                                  01270016
+      *         END-IF.                                                 01280016
+                                                                        01290016
+      *****************************************************             01291011
+      * ACCESO A TBCURCLI                                 *             01292011
+      *****************************************************             01293011
+      *         EXEC SQL SELECT TIPDOC, NRODOC, NROCLI                  01294016
+      *              INTO :WT-TIPDOC, :WT-NRODOC, :WT-NROCLI            01295016
+      *              FROM KC02803.TBCURCLI                              01296016
+      *                   WHERE  NROCLI = 10                            01297016
+      *         END-EXEC.                                               01298016
+      *                                                                 01299016
+      *         IF SQLCODE = NOT-FOUND                                  01299216
+      *            DISPLAY 'TABLA    VACÌA: '                           01299316
+      *         ELSE                                                    01299416
+      *             IF SQLCODE = 0                                      01299516
+      *               DISPLAY 'SQLCODE  = '    SQLCODE                  01299716
+      *                       '  TIPDOC   = '  WT-TIPDOC                01299816
+      *                       '  NRODOC   = '  WT-NRODOC                01299916
+      *                       '  NROCLI   = '  WT-NROCLI                01300016
+      *               DISPLAY ' '                                       01300116
+      *                MOVE WT-TIPDOC        TO  WS-ENT-NUM             01300216
+      *                MOVE WT-NRODOC        TO  WS-ENT-DES             01300316
+      *                MOVE WT-NROCLI        TO  WS-ENT-HOR             01300416
+      *               MOVE WS-DETALLE  TO WS-REG-ENTRADA                01300516
+      *               WRITE REG-ENTRADA FROM WS-REG-ENTRADA             01300616
+      *             ELSE                                                01300716
+      *                  MOVE SQLCODE TO WS-SQLCODE                     01300816
+      *                  DISPLAY 'ERROR DB2 '  WS-SQLCODE               01300916
+      *         END-IF                                                  01301016
+      *         END-IF.                                                 01301116
+                                                                        01301211
+       F-2000-PROCESO. EXIT.                                            01302007
+                                                                        01310007
+       2100-I-VALIDAR.                                                  01311015
+           EVALUATE NOV-TIP-NOV                                         01312015
+               WHEN 'AL'                                                01313015
+                   PERFORM 2110-I-ALTA THRU 2110-F-ALTA                 01314015
+               WHEN 'CL'                                                01315015
+                   PERFORM 2120-I-CL   THRU 2120-F-CL                   01316015
+               WHEN 'CN'                                                01317015
+                   PERFORM 2130-I-CN   THRU 2130-F-CN                   01318015
+               WHEN 'CX'                                                01319015
+                   PERFORM 2140-I-CX   THRU 2140-F-CX                   01319115
+               WHEN OTHER                                               01319215
+                  DISPLAY 'ERROR CODIGO NOVEDAD: ' NOV-TIP-NOV          01319316
+                  SET WS-FIN-PROCESO TO TRUE                            01319415
+            END-EVALUATE.                                               01319517
+       2100-F-VALIDAR. EXIT.                                            01319617
+                                                                        01319716
+      * ALTA CLIENTE ******************************************         01319816
+       2110-I-ALTA.                                                     01319917
+                                                                        01320218
+           MOVE NOV-TIP-DOC             TO WT-TIPDOC                    01320317
+           MOVE NOV-NRO-DOC             TO WT-NRODOC                    01320417
+           MOVE NOV-CLI-NRO             TO WT-NROCLI                    01320517
+           MOVE NOV-CLI-NOMBRE          TO WT-NOMAPE                    01320617
+           MOVE NOV-CLI-FENAC           TO WT-FECNAC                    01320717
+           MOVE NOV-CLI-SEXO            TO WT-SEXO                      01320817
+                                                                        01320916
+               DISPLAY 'CL - ALTA CLIENTE                   '.          01321018
+               DISPLAY DCLTBCURCLI.                                     01321118
+                                                                        01321218
+           EXEC SQL INSERT                                              01321318
+                     INTO KC02803.TBCURCLI                              01321418
+                (TIPDOC, NRODOC, NROCLI, NOMAPE, FECNAC, SEXO)          01321518
+                  VALUES (:WT-TIPDOC,                                   01321618
+                          :WT-NRODOC,                                   01321718
+                          :WT-NROCLI,                                   01321818
+                          :WT-NOMAPE,                                   01321918
+                          :WT-FECNAC,                                   01322018
+                          :WT-SEXO)                                     01322118
+                                                                        01322218
+           END-EXEC                                                     01322318
+                                                                        01322418
+           IF SQLCODE = NOT-FOUND                                       01322518
+               MOVE SQLCODE TO WS-SQLCODE                               01322618
+               DISPLAY 'ERROR INSERT  : '  WS-SQLCODE                   01322722
+           ELSE                                                         01322818
+                  IF SQLCODE = 0                                        01322918
+                      DISPLAY 'INSERT OK  '    WT-TIPDOC  WT-NRODOC     01323018
+                  ELSE                                                  01323118
+                         MOVE SQLCODE TO       WS-SQLCODE               01323218
+                         DISPLAY 'ERROR DB2 '  WS-SQLCODE               01323322
+                 END-IF                                                 01323418
+           END-IF.                                                      01323518
+                                                                        01323618
+       2110-F-ALTA. EXIT.                                               01323718
+                                                                        01323818
+      * MODIF. NRO CLIENTE ************************************         01323918
+       2120-I-CL.                                                       01324018
+                                                                        01324318
+           MOVE NOV-TIP-DOC             TO WT-TIPDOC                    01324418
+           MOVE NOV-NRO-DOC             TO WT-NRODOC                    01324518
+           MOVE NOV-CLI-NRO             TO WT-NROCLI                    01324618
+                                                                        01324818
+           DISPLAY 'CL - MODIF. NRO CLIENTE '                           01324919
+           DISPLAY 'ANT '  NOV-TIP-DOC ' ' NOV-NRO-DOC                  01325019
+                   ': ' NOV-CLI-NRO.                                    01325119
+                                                                        01325219
+              EXEC SQL                                                  01325318
+                  UPDATE KC02803.TBCURCLI                               01325418
+                  SET NROCLI = :WT-NROCLI                               01325518
+                  WHERE TIPDOC = :WT-TIPDOC AND                         01325618
+                       NRODOC = :WT-NRODOC                              01325718
+              END-EXEC.                                                 01325818
+                                                                        01325918
+           IF SQLCODE = NOT-FOUND                                       01326018
+               MOVE SQLCODE TO WS-SQLCODE                               01326118
+               DISPLAY 'ERROR UPDATE  : '  WS-SQLCODE                   01326222
+           ELSE                                                         01326318
+                  IF SQLCODE = 0                                        01326418
+                      DISPLAY 'UPDATE OK  '    WT-TIPDOC                01326519
+                              ' ' WT-NRODOC  ': ' WT-NROCLI             01326619
+                  ELSE                                                  01326718
+                         MOVE SQLCODE TO       WS-SQLCODE               01326818
+                         DISPLAY 'ERROR DB2 '  WS-SQLCODE               01326922
+                 END-IF                                                 01327018
+           END-IF.                                                      01327118
+                                                                        01327218
+       2120-F-CL.   EXIT.                                               01327318
+                                                                        01327418
+      * MODIF. NOMBRE DEL CLIENTE *****************************         01327518
+       2130-I-CN.                                                       01327618
+               DISPLAY 'CN - MODIF. NOMBRE DEL CLIENTE'.                01327718
+       2130-F-CN.   EXIT.                                               01327818
+                                                                        01327918
+      * MODIF. SEXO *******************************************         01328018
+       2140-I-CX.                                                       01328118
+               DISPLAY 'CX - MODIF. SEXO'.                              01328218
+       2140-F-CX.   EXIT.                                               01328318
+                                                                        01328418
+      **************************************                            01329007
+      *                                    *                            01330007
+      *  CUERPO FINAL CIERRE DE ENTRADA    *                            01340014
+      *                                    *                            01350007
+      **************************************                            01360007
+       9999-FINAL.                                                      01370007
+           CLOSE ENTRADA.                                               01380014
+                                                                        01390007
+           IF WS-ENT-CODE IS NOT EQUAL '00'                             01400014
+              DISPLAY '* ERROR EN CLOSE ENTRADA = ' WS-ENT-CODE         01410014
+              SET WS-FIN-PROCESO TO TRUE                                01420017
+           END-IF.                                                      01430007
+                                                                        01440007
+       F-9999-FINAL.  EXIT.                                             01450007
+                                                                        01460007
+

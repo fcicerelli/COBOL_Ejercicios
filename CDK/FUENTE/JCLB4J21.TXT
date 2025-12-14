@@ -1,0 +1,33 @@
+//KC03J21D JOB CLASS=A,MSGCLASS=O,MSGLEVEL=(1,1),NOTIFY=&SYSUID         00010007
+//JOBLIB  DD  DSN=DSND10.SDSNLOAD,DISP=SHR                              00020001
+//        DD DSN=KC03J21.CURSOS.PGMLIB,DISP=SHR                         00021007
+//***************************************************************       00030000
+//* EJECUTAR STEP1 SOLO LA PRIMERA VEZ PARA DEFINIR SALIDA      *       00040002
+//***************************************************************       00050000
+//*                                                                     00060000
+//*STEP1    EXEC PGM=IEFBR14                                            00070011
+//*DD1      DD DSN=KC03J21.ALU9999.DB2.SALIDA,UNIT=SYSDA,               00080011
+//*            DCB=(LRECL=244,BLKSIZE=8052,RECFM=FB),                   00090011
+//*            SPACE=(TRK,(1,1),RLSE),DISP=(,CATLG)                     00100011
+//*                                                                     00110000
+//***************************************************************       00120000
+//*      EJECUTAR PROGRAMA COBOL CON SQL EMBEBIDO               *       00130000
+//***************************************************************       00140000
+//*                                                                     00150000
+//STEP2    EXEC PGM=IKJEFT01,DYNAMNBR=20,COND=(4,LT)                    00160000
+//SYSTSPRT DD SYSOUT=*                                                  00170000
+//DDNOVED  DD DSN=KC03J21.NOVECLIE.KSDS.VSAM,DISP=SHR                   00171019
+//*DDNOVED  DD DSN=KC03J21.NOVECLI,DISP=SHR                             00172017
+//DDSALID  DD DSN=KC03J21.ALU9999.DB2.SALIDA,DISP=SHR                   00180017
+//SYSOUT   DD SYSOUT=*                                                  00190000
+//SYSTSIN  DD *                                                         00200000
+  DSN SYSTEM(DBDG)                                                      00210000
+  RUN  PROGRAM(PGMB4J21) PLAN(CURSOJ21) +                               00220018
+      LIB('KC03J21.CURSOS.PGMLIB')                                      00230007
+  END                                                                   00240000
+//SYSPRINT DD SYSOUT=*                                                  00250000
+//SYSUDUMP DD SYSOUT=*                                                  00260000
+//SYSIN    DD *                                                         00270000
+//*                                                                     00280000
+//                                                                      00290000
+

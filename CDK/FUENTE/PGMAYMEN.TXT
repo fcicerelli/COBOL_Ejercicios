@@ -1,0 +1,53 @@
+       IDENTIFICATION DIVISION.
+      **************************************
+      *    AUTOR:      FABIO CICERELLI     *
+      *    COMISION:   F                   *
+      **************************************
+       PROGRAM-ID. PGMAYMEN.
+       DATA DIVISION.
+      **************************************
+       WORKING-STORAGE SECTION.
+      **************************************
+       77  FILLER        PIC X(26) VALUE '* INICIO WORKING-STORAGE *'.
+
+      * VARIABLE 1
+        01 NUMEROS-TABLA.
+             05  WS-NUM        PIC 9(4)  OCCURS 3 TIMES.
+
+      * VARIABLE 2
+       77  WS-MAYOR      PIC 9(4)  VALUE ZEROS.
+
+      * VARIABLE 3
+       77  WS-MENOR      PIC 9(4)  VALUE ZEROS.
+      *
+       77  WS-DATA-IX    PIC 9     VALUE ZEROS.
+      *
+      * VARIABLE PARA MOSTRAR SUMATORIA FINAL
+      *77  WS-DISPLAY    PIC 9(4)  VALUE ZEROS.
+       77  FILLER        PIC X(26) VALUE '* FINAL  WORKING-STORAGE *'.
+
+      **************************************
+       PROCEDURE DIVISION.
+      **************************************
+           MOVE 45 TO WS-NUM(1).
+           MOVE 15 TO WS-NUM(2).
+           MOVE 10 TO WS-NUM(3).
+           MOVE WS-NUM(1) TO WS-MAYOR.
+           MOVE WS-NUM(1) TO WS-MENOR.
+           DISPLAY 1 '-' WS-NUM(1) '-' WS-MAYOR '-' WS-MENOR
+           PERFORM TEST AFTER VARYING WS-DATA-IX
+                   FROM 2 BY 1 UNTIL WS-DATA-IX = 3
+                IF WS-NUM(WS-DATA-IX) > WS-MAYOR
+                     MOVE WS-NUM(WS-DATA-IX) TO WS-MAYOR
+                END-IF
+                IF WS-NUM(WS-DATA-IX) < WS-MENOR
+                     MOVE WS-NUM(WS-DATA-IX) TO WS-MENOR
+                END-IF
+                DISPLAY WS-DATA-IX '-' WS-NUM(WS-DATA-IX) '-'
+                        WS-MAYOR '-' WS-MENOR
+           END-PERFORM.
+           DISPLAY 'EL NUMERO MAYOR ES: ' WS-MAYOR.
+           DISPLAY 'EL NUMERO MENOR ES: ' WS-MENOR.
+           GOBACK.
+
+

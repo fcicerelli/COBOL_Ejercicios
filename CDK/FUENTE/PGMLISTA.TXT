@@ -1,0 +1,311 @@
+       IDENTIFICATION DIVISION.                                         00010000
+        PROGRAM-ID PGMLISTA.                                            00011009
+       ENVIRONMENT DIVISION.                                            00020000
+       INPUT-OUTPUT SECTION.                                            00020200
+       FILE-CONTROL.                                                    00020300
+             SELECT LISTA1 ASSIGN DDLI1                                 00020409
+                    FILE STATUS IS WS-LI1-CODE.                         00020509
+                                                                        00020600
+             SELECT LISTA2  ASSIGN DDLI2                                00020709
+                    FILE STATUS IS WS-LI2-CODE.                         00020809
+                                                                        00020900
+             SELECT SALIDA  ASSIGN DDSAL                                00021000
+                    FILE STATUS IS WS-SAL-CODE.                         00022000
+                                                                        00023000
+       DATA DIVISION.                                                   00039000
+       FILE SECTION.                                                    00039100
+       FD LISTA1                                                        00039209
+            BLOCK CONTAINS 0 RECORDS                                    00039300
+            RECORDING MODE IS F.                                        00039400
+                                                                        00039500
+       01 REG-LISTA1     PIC X(80).                                     00039609
+                                                                        00039800
+       FD LISTA2                                                        00039909
+            BLOCK CONTAINS 0 RECORDS                                    00040000
+            RECORDING MODE IS F.                                        00040100
+                                                                        00040200
+       01 REG-LISTA2     PIC X(80).                                     00040309
+                                                                        00040600
+       FD SALIDA                                                        00040700
+            BLOCK CONTAINS 0 RECORDS                                    00040800
+            RECORDING MODE IS F.                                        00040900
+                                                                        00041000
+       01 REG-SALIDA     PIC X(80).                                     00041109
+                                                                        00041200
+      **************************************                            00041300
+       WORKING-STORAGE SECTION.                                         00041400
+      **************************************                            00041500
+       77  FILLER        PIC X(26) VALUE '* INICIO WORKING-STORAGE *'.  00041600
+       77  FILLER        PIC X(26) VALUE '* CODIGOS RETORNO FILES  *'.  00041700
+       77  WS-LI1-CODE      PIC XX    VALUE SPACES.                     00041809
+       77  WS-LI2-CODE      PIC XX    VALUE SPACES.                     00041909
+       77  WS-SAL-CODE      PIC XX    VALUE SPACES.                     00042000
+                                                                        00042105
+      * GUARDO SALDO DEL LISTA1/CUENTA                                  00042209
+                                                                        00042400
+       01  WS-STATUS-FIN    PIC X.                                      00042500
+           88  WS-FIN-LECTURA         VALUE 'Y'.                        00042600
+           88  WS-NO-FIN-LECTURA      VALUE 'N'.                        00042700
+                                                                        00042800
+       01  WS-STATUS-LI1    PIC X.                                      00042909
+           88  WS-FIN-LI1             VALUE 'Y'.                        00043009
+           88  WS-NO-FIN-LI1          VALUE 'N'.                        00043109
+                                                                        00043200
+       01  WS-STATUS-LI2    PIC X.                                      00043309
+           88  WS-FIN-LI2             VALUE 'Y'.                        00043409
+           88  WS-NO-FIN-LI2          VALUE 'N'.                        00043509
+                                                                        00044000
+      **************************************                            00048400
+      *         LAYOUT SALIDA              *                            00048500
+      **************************************                            00048600
+       01  WS-REG-SALIDA.                                               00048700
+           03  WS-SAL-NRO          PIC 9(05)    VALUE ZEROS.            00048800
+           03  FILLER              PIC X(75)    VALUE SPACES.           00049210
+                                                                        00049400
+      **************************************                            00049510
+      *         LAYOUT LIS1                *                            00049610
+      **************************************                            00049710
+       01  WS-REG-LISTA1.                                               00049810
+           03  WS-LI1-NRO          PIC 9(05)    VALUE ZEROS.            00049910
+           03  FILLER              PIC X(75)    VALUE SPACES.           00050010
+                                                                        00050210
+      **************************************                            00050310
+      *         LAYOUT LIS2                *                            00050410
+      **************************************                            00050510
+       01  WS-REG-LISTA2.                                               00050610
+           03  WS-LI2-NRO          PIC 9(05)    VALUE ZEROS.            00050710
+           03  FILLER              PIC X(75)    VALUE SPACES.           00050810
+                                                                        00050910
+      ********     CONTADOR DE LEIDOS Y GRABADOS  *                     00051000
+                                                                        00051100
+       77  WS-LEIDOS-LI2        PIC 9(05)        VALUE ZEROS.           00051210
+       77  WS-LEIDOS-LI1        PIC 9(05)        VALUE ZEROS.           00051309
+       77  WS-ERRONEOS-LI2      PIC 9(05)        VALUE ZEROS.           00051410
+       77  WS-GRABADOS-SAL      PIC 9(05)        VALUE ZEROS.           00051500
+                                                                        00051600
+       77  WS-LEYEN-LI2R        PIC X(35) VALUE                         00051710
+                        'CANTIDAD DE LISTA2      LEIDOS:  '.            00051810
+                                                                        00051900
+       77  WS-LEYEN-LI2E        PIC X(35) VALUE                         00052010
+                        'CANTIDAD DE LISTA2      ERROR :  '.            00052110
+                                                                        00052200
+       77  WS-LEYEN-LI1R        PIC X(35) VALUE                         00052309
+                        'CANTIDAD DE LISTA1     LEIDOS:  '.             00052410
+                                                                        00052500
+       77  WS-LEYEN-LI1W        PIC X(35) VALUE                         00052609
+                        'CANTIDAD RESULTADOS GRABADOS: '.               00052710
+                                                                        00054006
+       77  FILLER        PIC X(26) VALUE '* FINAL  WORKING-STORAGE *'.  00054906
+                                                                        00055006
+      ***************************************************************.  00055106
+       PROCEDURE DIVISION.                                              00055206
+      **************************************                            00055306
+      *                                    *                            00055406
+      *  CUERPO PRINCIPAL DEL PROGRAMA     *                            00055506
+      *                                    *                            00056000
+      **************************************                            00057000
+       MAIN-PROGRAM.                                                    00060000
+                                                                        00060100
+           PERFORM 1000-INICIO  THRU   F-1000-INICIO.                   00060200
+                                                                        00060300
+           PERFORM 2000-PROCESO  THRU  F-2000-PROCESO                   00060400
+                   UNTIL WS-FIN-LECTURA.                                00060700
+                                                                        00060800
+           PERFORM 9999-FINAL    THRU  F-9999-FINAL.                    00061200
+                                                                        00061300
+       F-MAIN-PROGRAM. GOBACK.                                          00061400
+                                                                        00061500
+      **************************************                            00061600
+      *                                    *                            00061700
+      *  CUERPO INICIO APERTURA ARCHIVOS   *                            00061800
+      *                                    *                            00061900
+      **************************************                            00062000
+       1000-INICIO.                                                     00062100
+                                                                        00065000
+           SET WS-NO-FIN-LECTURA TO TRUE                                00070207
+                                                                        00070300
+           OPEN INPUT  LISTA1                                           00071009
+           IF WS-LI1-CODE IS NOT EQUAL '00'                             00071109
+              DISPLAY '* ERROR EN OPEN LISTA1 = ' WS-LI1-CODE           00071209
+              MOVE 9999 TO RETURN-CODE                                  00071300
+              SET  WS-FIN-LECTURA TO TRUE                               00071400
+           ELSE                                                         00071607
+              PERFORM 3000-LEER-LI1   THRU F-3000-LEER-LI1              00071711
+           END-IF                                                       00071807
+                                                                        00071907
+           OPEN INPUT  LISTA2                                           00072009
+           IF WS-LI2-CODE IS NOT EQUAL '00'                             00072110
+              DISPLAY '* ERROR EN OPEN LISTA2  = ' WS-LI2-CODE          00072210
+              MOVE 9999 TO RETURN-CODE                                  00072300
+              SET  WS-FIN-LECTURA TO TRUE                               00072400
+           ELSE                                                         00072507
+              PERFORM 4000-LEER-LI2   THRU F-4000-LEER-LI2              00072611
+           END-IF                                                       00072707
+                                                                        00075600
+           OPEN OUTPUT SALIDA                                           00075707
+           IF WS-SAL-CODE IS NOT EQUAL '00'                             00075800
+              DISPLAY '* ERROR EN OPEN SALIDA  = ' WS-SAL-CODE          00075900
+              MOVE 9999 TO RETURN-CODE                                  00076000
+              SET  WS-FIN-LECTURA TO TRUE                               00076100
+           END-IF                                                       00076207
+           .                                                            00076707
+                                                                        00076807
+       F-1000-INICIO.   EXIT.                                           00076907
+                                                                        00077007
+      **************************************                            00077107
+      *                                    *                            00077207
+      *  CUERPO PRINCIPAL DE PROCESOS      *                            00077307
+      *  LECTURA FILE INPUT CLASIFICADO    *                            00077407
+      *  APAREO ARCHIVOS LISTA 1 Y LISTA 2 *                            00077511
+      *                                    *                            00077607
+      **************************************                            00077707
+       2000-PROCESO.                                                    00077807
+                                                                        00077907
+           IF WS-LI1-NRO      = WS-LI2-NRO                              00078012
+                                                                        00078107
+                MOVE  WS-LI1-NRO      TO WS-SAL-NRO                     00078211
+                                                                        00078305
+                PERFORM 6000-GRABAR-SALIDA                              00078411
+                                                                        00078511
+                PERFORM 3000-LEER-LI1                                   00078611
+                         THRU  F-3000-LEER-LI1                          00078711
+                PERFORM 4000-LEER-LI2                                   00078811
+                         THRU  F-4000-LEER-LI2                          00078911
+           ELSE                                                         00079000
+               IF WS-LI1-NRO      > WS-LI2-NRO                          00079111
+                   MOVE  WS-LI2-NRO      TO WS-SAL-NRO                  00079211
+                   PERFORM 6000-GRABAR-SALIDA                           00079311
+                                                                        00079411
+                   PERFORM 4000-LEER-LI2                                00079611
+                            THRU  F-4000-LEER-LI2                       00079711
+               ELSE                                                     00079802
+                   MOVE  WS-LI1-NRO      TO WS-SAL-NRO                  00079911
+                                                                        00080011
+                   PERFORM 6000-GRABAR-SALIDA                           00080111
+                   PERFORM 3000-LEER-LI1                                00080611
+                            THRU  F-3000-LEER-LI1                       00080711
+               END-IF                                                   00080805
+           END-IF                                                       00080902
+                                                                        00081002
+      *************************************************************     00081100
+      * CONTROL FIN DE ARCHIVOS DE ENTRADA, PARA FIN PROGRAMA           00081200
+      *************************************************************     00081300
+                                                                        00081400
+           IF WS-FIN-LI2 AND WS-FIN-LI1                                 00081510
+              SET  WS-FIN-LECTURA TO TRUE                               00081600
+           END-IF                                                       00081702
+           .                                                            00081802
+       F-2000-PROCESO. EXIT.                                            00081904
+                                                                        00082011
+      **************************************                            00082111
+      * LECTURA LISTA1                     *                            00082211
+      **************************************                            00082311
+       3000-LEER-LI1.                                                   00082411
+                                                                        00082511
+           READ LISTA1 INTO WS-REG-LISTA1                               00082611
+                                                                        00082711
+           EVALUATE WS-LI1-CODE                                         00082811
+           WHEN '00'                                                    00082911
+                            ADD 1 TO WS-LEIDOS-LI1                      00083011
+                                                                        00083111
+           WHEN '10'                                                    00083211
+              SET WS-FIN-LI1     TO TRUE                                00083311
+              MOVE 99999      TO WS-LI1-NRO                             00083411
+                                                                        00083511
+           WHEN OTHER                                                   00083611
+              DISPLAY '* ERROR EN LECTURA LISTA1 = ' WS-LI1-CODE        00083711
+              MOVE 9999 TO RETURN-CODE                                  00083811
+              SET WS-FIN-LECTURA TO TRUE                                00083911
+                                                                        00084011
+           END-EVALUATE.                                                00084111
+                                                                        00084211
+       F-3000-LEER-LI1. EXIT.                                           00084311
+                                                                        00084404
+      **************************************                            00084504
+      * LECTURA LISTA2                     *                            00084610
+      **************************************                            00084704
+       4000-LEER-LI2.                                                   00084811
+                                                                        00084904
+           READ LISTA2  INTO WS-REG-LISTA2                              00085009
+                                                                        00085104
+           EVALUATE WS-LI2-CODE                                         00085210
+           WHEN '00'                                                    00085307
+                            ADD 1 TO WS-LEIDOS-LI2                      00085410
+           WHEN '10'                                                    00085507
+              SET WS-FIN-LI2  TO TRUE                                   00085610
+              MOVE 99999      TO WS-LI2-NRO                             00085711
+                                                                        00085806
+           WHEN OTHER                                                   00085906
+              DISPLAY '* ERROR EN LECTURA LISTA2  = ' WS-LI2-CODE       00086010
+              MOVE 9999 TO RETURN-CODE                                  00086106
+              SET WS-FIN-LECTURA TO TRUE                                00086207
+                                                                        00086306
+           END-EVALUATE.                                                00086406
+                                                                        00086506
+       F-4000-LEER-LI2. EXIT.                                           00087011
+                                                                        00089407
+      ***************************************************               00089507
+      *PARRAFO PARA GRABAR LA SALIDA ACTUALIZADA                        00089607
+      ***************************************************               00089707
+                                                                        00089807
+       6000-GRABAR-SALIDA.                                              00089907
+                                                                        00090007
+           WRITE REG-SALIDA   FROM WS-REG-SALIDA                        00090107
+                                                                        00090207
+           IF WS-SAL-CODE =  ZEROS                                      00090307
+                  ADD 1 TO WS-GRABADOS-SAL                              00090407
+           ELSE                                                         00090507
+                DISPLAY '* ERROR EN WRITE SALIDA  = '                   00090607
+                                            WS-SAL-CODE                 00090707
+                MOVE 9999 TO RETURN-CODE                                00090807
+                SET WS-FIN-LECTURA TO TRUE                              00090907
+           END-IF.                                                      00091007
+                                                                        00091107
+                                                                        00091207
+       F-6000-GRABAR-SALIDA. EXIT.                                      00091307
+                                                                        00091407
+                                                                        00091507
+      **************************************                            00091607
+      *                                    *                            00091707
+      *  CUERPO FINAL CIERRE DE FILES      *                            00091807
+      *                                    *                            00091907
+      **************************************                            00092007
+       9999-FINAL.                                                      00092107
+                                                                        00092207
+           CLOSE LISTA1                                                 00092309
+              IF WS-LI1-CODE IS NOT EQUAL '00'                          00092410
+                DISPLAY '* ERROR EN CLOSE LISTA1 = '                    00092509
+                                            WS-LI1-CODE                 00092610
+                MOVE 9999 TO RETURN-CODE                                00092707
+                SET WS-FIN-LECTURA TO TRUE                              00092807
+             END-IF.                                                    00092907
+                                                                        00093007
+           CLOSE  LISTA2                                                00093109
+              IF WS-LI2-CODE IS NOT EQUAL '00'                          00093210
+                DISPLAY '* ERROR EN CLOSE LISTA2   ='                   00093309
+                                            WS-LI2-CODE                 00093410
+                MOVE 9999 TO RETURN-CODE                                00093507
+                SET WS-FIN-LECTURA TO TRUE                              00093607
+           END-IF.                                                      00093707
+                                                                        00093807
+           CLOSE SALIDA                                                 00093907
+              IF WS-SAL-CODE IS NOT EQUAL '00'                          00094007
+                DISPLAY '* ERROR EN CLOSE SALIDA  = '                   00094107
+                                            WS-SAL-CODE                 00094207
+                MOVE 9999 TO RETURN-CODE                                00094307
+                SET WS-FIN-LECTURA TO TRUE                              00094407
+             END-IF.                                                    00094507
+                                                                        00094607
+      **************************************                            00094707
+      *   MOSTRAR TOTALES DE CONTROL                                    00094807
+      **************************************                            00094907
+                                                                        00095007
+           DISPLAY WS-LEYEN-LI2R  WS-LEIDOS-LI2.                        00095110
+           DISPLAY WS-LEYEN-LI1R  WS-LEIDOS-LI1.                        00095210
+           DISPLAY WS-LEYEN-LI1W  WS-GRABADOS-SAL .                     00095310
+           DISPLAY WS-LEYEN-LI2E  WS-ERRONEOS-LI2.                      00095410
+                                                                        00095507
+       F-9999-FINAL.                                                    00096000
+           EXIT.                                                        00100000
+      *                                                                 00200000
+

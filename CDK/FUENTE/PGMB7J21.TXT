@@ -1,0 +1,462 @@
+       IDENTIFICATION DIVISION.                                         00010000
+       PROGRAM-ID. PGMb7j21.                                            00020002
+       AUTHOR. ESTUDIANTE.                                              00030000
+      **********************************************************        00040000
+      *                                                        *        00050000
+      *  PROGRAMA PARA SQL EMBEBIDO                            *        00060000
+      *  LECTURA CURSOR DB2 E IMPRESION DE LISTADO             *        00070000
+      *                                                        *        00071002
+      *           CORTE DE CONTROL                             *        00071102
+      *                                                        *        00071202
+      *  ESQUELETOS:         PGMASI15  PGMAPA02   JOBDB2XX     *        00072005
+      *  JCL       :         JCLDB1xx                          *        00073002
+      *                                                        *        00074002
+      **********************************************************        00080000
+      *      MANTENIMIENTO DE PROGRAMA                         *        00090000
+      **********************************************************        00100000
+      *  FECHA   *    DETALLE        * COD *                            00110000
+      **************************************                            00120000
+      *          *                   *     *                            00130000
+      *          *                   *     *                            00140000
+      **************************************                            00150000
+       ENVIRONMENT DIVISION.                                            00160000
+       CONFIGURATION SECTION.                                           00170000
+       SPECIAL-NAMES.                                                   00180000
+           DECIMAL-POINT IS COMMA.                                      00190000
+                                                                        00200000
+       INPUT-OUTPUT SECTION.                                            00210000
+       FILE-CONTROL.                                                    00220000
+                                                                        00230000
+             SELECT SALIDA  ASSIGN DDSALE                               00240000
+             FILE STATUS IS WS-LISTADO-FS.                              00250000
+                                                                        00260000
+       DATA DIVISION.                                                   00270000
+       FILE SECTION.                                                    00280000
+       FD SALIDA                                                        00290000
+             BLOCK CONTAINS 0 RECORDS                                   00300000
+             RECORDING MODE IS F.                                       00310000
+                                                                        00320000
+       01 REG-SALIDA      PIC X(80).                                    00330003
+                                                                        00340000
+      **************************************                            00350000
+       WORKING-STORAGE SECTION.                                         00360000
+      **************************************                            00370000
+       77  FILLER        PIC X(26) VALUE '* INICIO WORKING-STORAGE *'.  00380000
+                                                                        00390000
+       77  WS-TOT-GRABADOS  PIC 9(3)  VALUE ZEROS.                      00391003
+                                                                        00401003
+       01  WS-FLAG-FIN      PIC X.                                      00410000
+           88  WS-SI-PROCESO      VALUE ' '.                            00420000
+           88  WS-FIN-PROCESO     VALUE 'F'.                            00430000
+                                                                        00441007
+       01  WS-STA-FILE-CTA  PIC X.                                      00442007
+           88  WS-FIN-FILE-CTA        VALUE 'Y'.                        00443007
+           88  WS-NO-FIN-FILE-CTA     VALUE 'N'.                        00444007
+                                                                        00445007
+       01  WS-STA-FILE-CLI  PIC X.                                      00446007
+           88  WS-FIN-FILE-CLI        VALUE 'Y'.                        00447007
+           88  WS-NO-FIN-FILE-CLI     VALUE 'N'.                        00448007
+                                                                        00449007
+       77  WS-LISTADO-FS PIC XX    VALUE SPACES.                        00450000
+           88  WS-LISTADO-FS-OK    VALUE '00'.                          00460000
+           88  WS-LISTADO-FS-EOF   VALUE '10'.                          00470000
+           88  WS-LISTADO-FS-NOK   VALUE '01' THRU '09'                 00480000
+                                         '11' THRU '99'.                00490000
+                                                                        00500000
+      **************************************                            00510000
+      *         LAYOUT LISTADO             *                            00520000
+      *     LARGO REGISTRO = 133 BYTES     *                            00530000
+      **************************************                            00540000
+       01  WS-TITULO.                                                   00550000
+           03  FILLER              PIC X        VALUE SPACES.           00560000
+           03  FILLER              PIC X(47)    VALUE                   00570005
+               'CLIENTES ENCONTRADOS EN TABLA CLIENTES. FECHA: '.       00580010
+           03  WS-DD               PIC Z9       VALUE ZEROS.            00590000
+           03  FILLER              PIC X        VALUE '-'.              00600000
+           03  WS-MM               PIC 99       VALUE ZEROS.            00610000
+           03  FILLER              PIC X        VALUE '-'.              00620000
+           03  WS-AA               PIC 9999     VALUE ZEROS.            00630000
+           03  FILLER              PIC X(4)     VALUE SPACES.           00640000
+           03  FILLER              PIC X(15)    VALUE                   00650000
+               'NUMERO PAGINA: '.                                       00660000
+           03  WS-PAGINA           PIC Z9       VALUE ZEROS.            00670000
+           03  FILLER              PIC X        VALUE SPACES.           00671005
+                                                                        00690000
+       01  WS-SUBTITULO.                                                00700000
+           03  FILLER              PIC X        VALUE SPACES.           00710000
+           03  FILLER  PIC X(08)   VALUE 'NROCLI  '.                    00720005
+           03  FILLER              PIC X        VALUE SPACES.           00730000
+           03  FILLER  PIC X(08)   VALUE 'TIPDOC  '.                    00740005
+           03  FILLER              PIC X        VALUE SPACES.           00750000
+           03  FILLER  PIC X(08)   VALUE 'NRODOC  '.                    00760005
+           03  FILLER              PIC X        VALUE SPACES.           00770000
+           03  FILLER  PIC X(28)   VALUE 'NOMBRE Y APELLIDO '.          00780005
+           03  FILLER              PIC X        VALUE SPACES.           00790000
+           03  FILLER  PIC X(20)   VALUE 'SUCUEN           '.           00800005
+           03  FILLER              PIC X        VALUE SPACES.           00810000
+           03  FILLER  PIC X(10)   VALUE '          '.                  00820005
+           03  FILLER              PIC X        VALUE SPACES.           00830000
+           03  FILLER  PIC X(10)   VALUE '          '.                  00840005
+                                                                        00850000
+       01  WS-DETALLE.                                                  00860000
+           03  FILLER              PIC X(02)    VALUE SPACES.           00870005
+           03  WS-DET-NROCLI       PIC ZZ9.                             00880005
+           03  FILLER              PIC X(08)    VALUE SPACE.            00890005
+           03  WS-DET-TIPDOC       PIC X(02)    VALUE SPACES.           00900005
+           03  FILLER              PIC X(01)    VALUE SPACE.            00910005
+           03  WS-DET-NRODOC       PIC ZZZZZZZZZZ9.                     00920005
+           03  FILLER              PIC X        VALUE SPACE.            00930000
+           03  WS-DET-NOMAPE       PIC X(30)    VALUE SPACES.           00940005
+           03  FILLER              PIC X        VALUE SPACE.            00950000
+           03  WS-DET-SUCUEN       PIC Z9.                              00960005
+           03  FILLER              PIC X        VALUE SPACE.            00970000
+                                                                        01010000
+       77  WS-CUENTA-LINEA         PIC 9(02)    VALUE ZEROS.            01020000
+       77  WS-CUENTA-PAGINA        PIC 9(02)    VALUE 01.               01030000
+       77  WS-LINEA-POR-PAGINA     PIC 9(02)    VALUE 10.               01040000
+                                                                        01040107
+       77  WS-CLAVE-CTA            PIC 9(03)    VALUE ZEROS.            01041007
+       77  WS-CLAVE-CLI            PIC 9(03)    VALUE ZEROS.            01042007
+                                                                        01050000
+       01  WS-CONTADORES.                                               01060000
+           03  WS-CANT-LEIDOS      PIC 9(05)    VALUE ZERO.             01070000
+           03  WS-CANT-IMPRESOS    PIC 9(05)    VALUE ZERO.             01080000
+                                                                        01090000
+       77  WS-CANT-LEIDOS-CLI     PIC 9(3)  VALUE ZEROS.                01091003
+       77  WS-CANT-LEIDOS-CTA     PIC 9(3)  VALUE ZEROS.                01092003
+       77  WS-CANT-ENCONTRADOS    PIC 9(3)  VALUE ZEROS.                01093003
+       77  WS-CANT-NO-ENCONTRADOS PIC 9(3)  VALUE ZEROS.                01094003
+                                                                        01095003
+       77  FILLER        PIC X(26) VALUE '* VARIABLES SQL          *'.  01100000
+       77  WS-SQLCODE    PIC +999  USAGE DISPLAY VALUE ZEROS.           01110000
+                                                                        01120000
+            EXEC SQL                                                    01130000
+              INCLUDE SQLCA                                             01140000
+            END-EXEC.                                                   01150000
+                                                                        01160000
+      *****************************************                         01170000
+      *         LAYOUT TABLA TBCURCTA         *                         01180000
+      *****************************************                         01190000
+            EXEC SQL                                                    01200000
+              INCLUDE TBCURCTA                                          01210001
+            END-EXEC.                                                   01220000
+                                                                        01230000
+      *****************************************                         01240000
+      *         LAYOUT TABLA TBCURCLI         *                         01250000
+      *****************************************                         01260000
+            EXEC SQL                                                    01270000
+              INCLUDE TBCURCLI                                          01280000
+            END-EXEC.                                                   01290000
+                                                                        01291003
+      *     CURSOR CUENTAS                                              01292003
+            EXEC SQL                                                    01293003
+              DECLARE ITEM_CURSOR-CTA CURSOR                            01294003
+              FOR                                                       01295003
+             SELECT A.NROCLI,                                           01296010
+                    A.SUCUEN                                            01299010
+                FROM  KC02803.TBCURCTA A                                01299110
+                ORDER BY A.NROCLI                                       01299210
+            END-EXEC.                                                   01299303
+                                                                        01299403
+                                                                        01300000
+      *     CURSOR CLIENTES                                             01301003
+            EXEC SQL                                                    01310000
+              DECLARE ITEM_CURSOR-CLI CURSOR                            01320003
+              FOR                                                       01330000
+             SELECT I.TIPDOC,                                           01340010
+                    I.NRODOC,                                           01350010
+                    I.NROCLI,                                           01360010
+                    I.NOMAPE                                            01370010
+                FROM  KC02803.TBCURCLI I                                01410010
+                ORDER BY I.NROCLI                                       01450010
+            END-EXEC.                                                   01460000
+                                                                        01470000
+      ********     FECHA DE PROCESO ***************                     01480000
+       01  WS-FECHA.                                                    01490000
+           03  WS-FECHA-AA             PIC 9999  VALUE ZEROS.           01500000
+           03  WS-FECHA-MM             PIC 99    VALUE ZEROS.           01510000
+           03  WS-FECHA-DD             PIC 99    VALUE ZEROS.           01520000
+                                                                        01530000
+       77  FILLER        PIC X(26) VALUE '* FINAL  WORKING-STORAGE *'.  01540000
+                                                                        01550000
+      ***************************************************************.  01560000
+       PROCEDURE DIVISION.                                              01570000
+      **************************************                            01580000
+      *                                    *                            01590000
+      *  CUERPO PRINCIPAL DEL PROGRAMA     *                            01600000
+      *                                    *                            01610000
+      **************************************                            01620000
+       MAIN-PROGRAM.                                                    01630000
+                                                                        01640000
+           PERFORM 1000-I-INICIO   THRU                                 01650000
+                   1000-F-INICIO.                                       01660000
+                                                                        01670000
+           PERFORM 2000-I-PROCESO        THRU                           01680005
+                   2000-F-PROCESO        UNTIL WS-FIN-PROCESO.          01690005
+                                                                        01700000
+           PERFORM 9999-I-FINAL    THRU                                 01710000
+                   9999-F-FINAL.                                        01720000
+                                                                        01730000
+       F-MAIN-PROGRAM. GOBACK.                                          01740000
+                                                                        01750000
+                                                                        01754005
+      **************************************                            01760000
+      *  CUERPO INICIO APERTURA ARCHIVOS   *                            01770000
+      **************************************                            01780000
+       1000-I-INICIO.                                                   01790000
+           ACCEPT WS-FECHA             FROM DATE YYYYMMDD.              01800000
+           MOVE   WS-FECHA-AA          TO WS-AA                         01810000
+           MOVE   WS-FECHA-MM          TO WS-MM                         01820000
+           MOVE   WS-FECHA-DD          TO WS-DD                         01830000
+           SET    WS-SI-PROCESO        TO TRUE                          01840000
+                                                                        01850000
+           OPEN OUTPUT SALIDA                                           01860000
+           IF WS-LISTADO-FS-NOK                                         01870000
+              DISPLAY '* ERROR EN OPEN LISTADO = ' WS-LISTADO-FS        01880000
+              MOVE 9999                TO RETURN-CODE                   01890000
+              SET  WS-FIN-PROCESO      TO TRUE                          01900000
+           END-IF                                                       01910000
+                                                                        01920000
+           EXEC SQL                                                     01930000
+              OPEN ITEM_CURSOR-CTA                                      01940003
+           END-EXEC.                                                    01950000
+                                                                        01961005
+           IF SQLCODE NOT EQUAL ZEROS                                   01961105
+              MOVE SQLCODE             TO WS-SQLCODE                    01961205
+              DISPLAY '* ERROR OPEN CURSOR = ' WS-SQLCODE               01961305
+              MOVE 9999                TO RETURN-CODE                   01961405
+              SET  WS-FIN-PROCESO      TO TRUE                          01961507
+           END-IF                                                       01961605
+                                                                        01961705
+           EXEC SQL                                                     01962003
+              OPEN ITEM_CURSOR-CLI                                      01963003
+           END-EXEC.                                                    01964003
+                                                                        01965003
+           IF SQLCODE NOT EQUAL ZEROS                                   01970000
+              MOVE SQLCODE             TO WS-SQLCODE                    01980000
+              DISPLAY '* ERROR OPEN CURSOR = ' WS-SQLCODE               01990000
+              MOVE 9999                TO RETURN-CODE                   02000000
+              SET  WS-FIN-PROCESO      TO TRUE                          02010007
+           END-IF                                                       02020000
+                                                                        02031007
+               PERFORM  2100-I-LEER-CUENTAS   THRU                      02032007
+                        2100-F-LEER-CUENTAS                             02033007
+      *      DISPLAY 'INICIO CTA ' DCLTBCURCTA                          02035010
+                                                                        02035108
+                PERFORM  2200-I-LEER-CLIENTES  THRU                     02036007
+                         2200-F-LEER-CLIENTES                           02037007
+      *      DISPLAY 'INICIO CLI ' DCLTBCURCLI                          02037110
+                                                                        02038007
+             PERFORM 6500-IMPRIMIR-TITULOS THRU                         02040007
+                   F-6500-IMPRIMIR-TITULOS                              02050000
+           .                                                            02060000
+       1000-F-INICIO.   EXIT.                                           02070000
+                                                                        02080000
+      ****************************************                          02080106
+      *   PROCESO                            *                          02080206
+      ****************************************                          02080306
+                                                                        02081005
+       2000-I-PROCESO.                                                  02082005
+      *    DISPLAY '*'                                                  02082110
+      *    DISPLAY 'CTA ' WS-NROCLI ' = CLI ' WT-NROCLI                 02083010
+      *    DISPLAY WS-CLAVE-CTA ' ' WS-CLAVE-CLI                        02083210
+      *    SON IGUALES; GRABAR APAREADOS      *                         02083307
+           IF WS-CLAVE-CTA = WS-CLAVE-CLI                               02083407
+               ADD 1 TO WS-CANT-ENCONTRADOS                             02083507
+      *        DISPLAY 'NOVEDAD: '   WS-CLAVE-CLI                       02083610
+                                                                        02083707
+               PERFORM  6100-GRABAR-DETALLE   THRU                      02083807
+                      F-6100-GRABAR-DETALLE                             02083907
+      *     DISPLAY DCLTBCURCLI                                         02084010
+               PERFORM  2200-I-LEER-CLIENTES  THRU                      02084110
+                        2200-F-LEER-CLIENTES                            02084210
+                                                                        02084307
+           ELSE                                                         02084605
+                                                                        02084705
+      *    CLAVE-CTA ES MAYOR QUE CLAVE-CLI ENTONCES ARMO SALIDA DESDE  02084807
+      *    FILE2 NO ENCONTRO CUENTA PARA ACTUALIZAR                     02084907
+             IF WS-CLAVE-CTA > WS-CLAVE-CLI                             02085007
+               ADD 1 TO WS-CANT-NO-ENCONTRADOS                          02085107
+               DISPLAY 'CUENTA SIN CLIENTE EN TBCURCLI: ' WS-CLAVE-CLI  02085210
+                                                                        02085305
+               PERFORM  2200-I-LEER-CLIENTES  THRU                      02085410
+                        2200-F-LEER-CLIENTES                            02085510
+                                                                        02085607
+             ELSE                                                       02086005
+                                                                        02086107
+      *    CLAVE1 ES MENOR QUE CLAVE2 ENTONCES ARMO SALIDA DESDE FILE1  02086205
+      *    CUENTA SIN MOVIMIENTOS                                       02086305
+                                                                        02086405
+               PERFORM  2100-I-LEER-CUENTAS   THRU                      02086510
+                        2100-F-LEER-CUENTAS                             02086610
+                                                                        02087005
+             END-IF                                                     02087105
+           END-IF.                                                      02087205
+      *************************************************************     02087305
+      * CONTROL FIN DE ARCHIVOS DE ENTRADA, PARA FIN PROGRAMA           02087405
+      *************************************************************     02087505
+                                                                        02087605
+           IF WS-FIN-FILE-CTA AND WS-FIN-FILE-CLI                       02087707
+              SET  WS-FIN-PROCESO TO TRUE                               02087807
+           END-IF.                                                      02087905
+                                                                        02088005
+        2000-F-PROCESO. EXIT.                                           02089405
+                                                                        02089505
+      **************************************                            02090000
+      *  FETCH DE CUENTAS                  *                            02100004
+      **************************************                            02110000
+       2100-I-LEER-CUENTAS.                                             02120005
+                                                                        02130000
+           EXEC SQL                                                     02140000
+              FETCH  ITEM_CURSOR-CTA                                    02150004
+                     INTO                                               02160000
+                        :DCLTBCURCTA.WS-NROCLI,                         02170009
+                        :DCLTBCURCTA.WS-SUCUEN                          02180009
+           END-EXEC.                                                    02240000
+                                                                        02250000
+           EVALUATE TRUE                                                02260000
+             WHEN SQLCODE EQUAL ZEROS                                   02270000
+                ADD  1                      TO WS-CANT-LEIDOS-CTA       02271005
+                MOVE WS-NROCLI              TO WS-CLAVE-CTA             02272007
+      *         DISPLAY 'A:' WS-CANT-LEIDOS-CTA ' - WS-NROCLI: '        02300010
+      *                 WS-NROCLI ' ' WS-SUCUEN                         02301010
+             WHEN SQLCODE EQUAL +100                                    02310000
+                MOVE 999               TO WS-CLAVE-CTA                  02311007
+                SET WS-FIN-FILE-CTA    TO TRUE                          02320007
+                                                                        02330000
+             WHEN OTHER                                                 02340000
+                MOVE SQLCODE           TO WS-SQLCODE                    02350000
+                DISPLAY 'ERROR FETCH CURSOR: ' WS-SQLCODE               02360000
+                SET WS-FIN-PROCESO     TO TRUE                          02370007
+           END-EVALUATE                                                 02380000
+           .                                                            02390000
+       2100-F-LEER-CUENTAS. EXIT.                                       02400005
+                                                                        02410000
+                                                                        02411004
+      **************************************                            02412004
+      *  FECH DE CLIENTES                  *                            02413004
+      **************************************                            02414004
+       2200-I-LEER-CLIENTES.                                            02415005
+                                                                        02416004
+           EXEC SQL                                                     02417004
+              FETCH  ITEM_CURSOR-CLI                                    02418004
+                     INTO                                               02419004
+                        :DCLTBCURCLI.WT-TIPDOC,                         02419104
+                        :DCLTBCURCLI.WT-NRODOC,                         02419204
+                        :DCLTBCURCLI.WT-NROCLI,                         02419304
+                        :DCLTBCURCLI.WT-NOMAPE                          02419404
+           END-EXEC.                                                    02419804
+                                                                        02419904
+           EVALUATE TRUE                                                02420004
+             WHEN SQLCODE EQUAL ZEROS                                   02420104
+                ADD  1                      TO WS-CANT-LEIDOS-CLI       02420205
+                MOVE WT-NROCLI              TO WS-CLAVE-CLI             02420307
+      *         DISPLAY 'I:' WS-CANT-LEIDOS-CLI ' - ' WT-TIPDOC ' '     02420610
+      *               WT-NRODOC ' WT-NROCLI ' WT-NROCLI ' ' WT-NOMAPE   02420710
+             WHEN SQLCODE EQUAL +100                                    02420804
+                MOVE 999               TO WS-CLAVE-CLI                  02420907
+                SET WS-FIN-FILE-CLI    TO TRUE                          02421007
+                                                                        02421104
+             WHEN OTHER                                                 02421204
+                MOVE SQLCODE           TO WS-SQLCODE                    02421304
+                DISPLAY 'ERROR FETCH CURSOR: ' WS-SQLCODE               02421404
+                SET WS-FIN-PROCESO     TO TRUE                          02421507
+           END-EVALUATE                                                 02421604
+           .                                                            02421704
+       2200-F-LEER-CLIENTES. EXIT.                                      02421805
+                                                                        02421904
+      ***************************************************               02422000
+      *PARRAFO PARA IMPRIMIR DETALLE                    *               02430000
+      ***************************************************               02440000
+       6100-GRABAR-DETALLE.                                             02450000
+      *    ADD  1                      TO WS-CANT-LEIDOS                02460005
+           MOVE WT-NROCLI              TO WS-DET-NROCLI                 02461005
+           MOVE WT-TIPDOC              TO WS-DET-TIPDOC                 02470005
+           MOVE WT-NRODOC              TO WS-DET-NRODOC                 02480005
+           MOVE WT-NOMAPE              TO WS-DET-NOMAPE                 02510005
+           MOVE WS-SUCUEN              TO WS-DET-SUCUEN                 02511005
+                                                                        02540005
+           IF WS-CUENTA-LINEA >= WS-LINEA-POR-PAGINA                    02550005
+               PERFORM 6500-IMPRIMIR-TITULOS THRU                       02560005
+                     F-6500-IMPRIMIR-TITULOS                            02570005
+           END-IF                                                       02580005
+                                                                        02590005
+           WRITE REG-SALIDA          FROM WS-DETALLE AFTER 1            02600005
+           IF WS-LISTADO-FS-NOK                                         02610005
+              DISPLAY '* ERROR EN WRITE LISTADO = ' WS-LISTADO-FS       02620005
+              MOVE 9999                TO RETURN-CODE                   02630005
+              SET WS-FIN-PROCESO       TO TRUE                          02640005
+           ELSE                                                         02650005
+              ADD 1                    TO WS-CANT-IMPRESOS              02660005
+              ADD 1                    TO WS-CUENTA-LINEA               02670005
+           END-IF                                                       02680005
+           .                                                            02690000
+       F-6100-GRABAR-DETALLE. EXIT.                                     02700000
+                                                                        02710000
+      **************************************                            02720000
+      *  IMPRIMIR TITULOS                  *                            02730000
+      **************************************                            02740000
+       6500-IMPRIMIR-TITULOS.                                           02750000
+           MOVE WS-CUENTA-PAGINA       TO WS-PAGINA                     02760000
+           MOVE 2                      TO WS-CUENTA-LINEA               02770000
+           ADD  1                      TO WS-CUENTA-PAGINA              02780000
+           WRITE REG-SALIDA          FROM WS-TITULO AFTER PAGE          02790000
+           IF WS-LISTADO-FS-NOK                                         02800000
+              DISPLAY '* ERROR EN WRITE LISTADO(1) = ' WS-LISTADO-FS    02810000
+              MOVE 9999                TO RETURN-CODE                   02820000
+              SET WS-FIN-PROCESO       TO TRUE                          02830000
+           END-IF                                                       02840000
+           WRITE REG-SALIDA          FROM WS-SUBTITULO AFTER 1          02850000
+           IF WS-LISTADO-FS-NOK                                         02860000
+              DISPLAY '* ERROR EN WRITE LISTADO(2) = ' WS-LISTADO-FS    02870000
+              MOVE 9999                TO RETURN-CODE                   02880000
+              SET WS-FIN-PROCESO       TO TRUE                          02890000
+           END-IF                                                       02900000
+           .                                                            02910000
+       F-6500-IMPRIMIR-TITULOS. EXIT.                                   02920000
+                                                                        02930000
+      **************************************                            02940000
+      *  CUERPO FINAL CIERRE DE FILES      *                            02950000
+      **************************************                            02960000
+       9999-I-FINAL.                                                    02970000
+           EXEC SQL                                                     02980000
+              CLOSE ITEM_CURSOR-CTA                                     02990003
+           END-EXEC.                                                    03000000
+                                                                        03010103
+           IF SQLCODE NOT EQUAL ZEROS                                   03010203
+              MOVE SQLCODE             TO WS-SQLCODE                    03010303
+              DISPLAY '* ERROR CLOSE CURSOR = ' WS-SQLCODE              03010403
+              MOVE 9999                TO RETURN-CODE                   03010503
+              SET WS-FIN-PROCESO       TO TRUE                          03010603
+           END-IF.                                                      03010703
+                                                                        03010803
+           EXEC SQL                                                     03011003
+              CLOSE ITEM_CURSOR-CLI                                     03012003
+           END-EXEC.                                                    03013003
+                                                                        03014003
+           IF SQLCODE NOT EQUAL ZEROS                                   03020000
+              MOVE SQLCODE             TO WS-SQLCODE                    03030000
+              DISPLAY '* ERROR CLOSE CURSOR = ' WS-SQLCODE              03040000
+              MOVE 9999                TO RETURN-CODE                   03050000
+              SET WS-FIN-PROCESO       TO TRUE                          03060000
+           END-IF.                                                      03070000
+                                                                        03080000
+           CLOSE SALIDA                                                 03090000
+           IF WS-LISTADO-FS-NOK                                         03100000
+                DISPLAY '* ERROR EN CLOSE SALIDA  = ' WS-LISTADO-FS     03110000
+                MOVE 9999              TO RETURN-CODE                   03120000
+                SET WS-FIN-PROCESO     TO TRUE                          03130000
+           END-IF                                                       03140000
+                                                                        03150000
+      **************************************                            03160000
+      *   MOSTRAR TOTALES DE CONTROL                                    03170000
+      **************************************                            03180000
+           DISPLAY 'LEIDOS EN TBCURCLI    :' WS-CANT-LEIDOS-CLI         03190005
+           DISPLAY 'LEIDOS EN TBCURCTA    :' WS-CANT-LEIDOS-CTA         03200005
+           DISPLAY 'ENCONTRADOS           :' WS-CANT-ENCONTRADOS        03201005
+           DISPLAY 'NO ENCONTRADOS        :' WS-CANT-NO-ENCONTRADOS     03202005
+           .                                                            03210000
+       9999-F-FINAL.                                                    03220000
+           EXIT.                                                        03230000
+      *                                                                 03240000
+

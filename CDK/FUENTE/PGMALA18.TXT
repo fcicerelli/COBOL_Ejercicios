@@ -1,0 +1,407 @@
+       IDENTIFICATION DIVISION.                                         00010000
+       PROGRAM-ID. PGMALA18.                                            00020001
+       DATA DIVISION.                                                   00030000
+       FILE SECTION.                                                    00040000
+       WORKING-STORAGE SECTION.                                         00050000
+                                                                        00060000
+       01  WS-VARIABLES.                                                00070000
+           03 WS-MAP-00            PIC X(07)       VALUE 'MAP3A18'.     00080001
+           03 WS-MAPSET-00         PIC X(07)       VALUE 'MAP3A18'.     00090001
+           03 WS-LONG              PIC S9(04) COMP.                     00100000
+           03 WS-COMLONG           PIC S9(04) COMP.                     00110000
+           03 WS-ABSTIME           PIC S9(16) COMP VALUE +0.            00120000
+           03 WS-FECHA             PIC X(10)       VALUE SPACES.        00130000
+           03 WS-SEP-DATE          PIC X           VALUE '/'.           00140000
+           03 WS-HORA              PIC X(08)       VALUE SPACES.        00150000
+           03 WS-SEP-HOUR          PIC X           VALUE ':'.           00160000
+           03 WS-RESP              PIC S9(04) COMP.                     00170000
+           03 SW-CONFIRMAR         PIC X VALUE 'Y'.                     00180000
+           03 WS-NORMAL    PIC X VALUE '*'.                             00190000
+           03 WS-ENTER     PIC X VALUE ' '.                             00200000
+                                                                        00210000
+       01  CT-CONSTANTES.                                               00220000
+           03 CT-MSGO.                                                  00230000
+              05 CT-MNS-01         PIC X(72) VALUE                      00240000
+                 'INGRESE LOS DATOS Y PRESIONE ENTER'.                  00250000
+              05 CT-MNS-02         PIC X(72) VALUE                      00260000
+                 'TIPO Y NRO DE DOC EXISTENTES - REINGRESAR '.          00270000
+              05 CT-MNS-03         PIC X(72) VALUE                      00280000
+                 'TIPO DE DOCUMENTO INVALIDO - REINGRESAR '.            00290000
+              05 CT-MNS-04         PIC X(72) VALUE                      00300000
+                 'NRO DE DOCUMENTO INVALIDO - REINGRESAR'.              00310000
+              05 CT-MNS-05         PIC X(72) VALUE                      00320000
+                 'NOMBRE Y APELLIDO INVALIDO - REINGRESAR'.             00330000
+              05 CT-MNS-06         PIC X(72) VALUE                      00340000
+                 'FECHA DE NACIMIENTO INVALIDA - REINGRESAR'.           00350000
+              05 CT-MNS-07         PIC X(72) VALUE                      00360000
+                 'SEXO INVALIDO - REINGRESAR'.                          00370000
+              05 CT-MNS-08         PIC X(72) VALUE                      00380000
+                 'CLIENTE DADO DE ALTA CON EXITO'.                      00390000
+              05 CT-MNS-09         PIC X(72) VALUE                      00400000
+                 'PROBLEMA CON EL ARCHIVO PERSONA'.                     00410000
+              05 CT-MNS-10         PIC X(72) VALUE                      00420000
+                 'TECLA INVALIDA'.                                      00430000
+              05 CT-MNS-EXIT       PIC X(72) VALUE                      00440000
+                 'FIN TRANSACCION T308'.                                00450000
+           03 CT-DATASET           PIC X(08)  VALUE 'PERSONAS'.         00460003
+           03 CT-DATASET-LEN       PIC S9(04) COMP VALUE 160.           00470000
+           03 CT-DATASET-KEYLEN    PIC S9(04) COMP VALUE 013.           00480000
+                                                                        00490000
+       COPY MAP3A18.                                                    00500001
+       COPY DFHBMSCA.                                                   00510000
+       COPY DFHAID.                                                     00520000
+       COPY CPPERSON.                                                   00530000
+                                                                        00540000
+       01  WS-COMMAREA.                                                 00550000
+           03 WS-USER-DATA.                                             00560000
+              05 WS-USER-TIPDOC    PIC X(02).                           00570000
+              05 WS-USER-NRODOC    PIC 9(11).                           00580000
+           03 WS-TIP-DOC           PIC X(02).                           00590000
+              88 WS-TIP-DOC-BOOLEAN                   VALUE 'DU'        00600000
+                                                            'PA'        00610000
+                                                            'PE'.       00620000
+           03 WS-PRIMERA           PIC 9.                               00630000
+           03 FILLER               PIC X(4).                            00640000
+                                                                        00650000
+      *********VARIABLES DE VALIDACION                                  00660000
+                                                                        00670000
+       01  WS-FECHA-VAL.                                                00680000
+           03 WS-ANIO              PIC 9(04)          VALUE ZEROS.      00690000
+           03 WS-MES               PIC 9(02)          VALUE ZEROS.      00700000
+           03 WS-DIA               PIC 9(02)          VALUE ZEROS.      00710000
+                                                                        00720000
+       77  WS-FECHA-VALIDA         PIC X.                               00730000
+           88 FECHAOK                                 VALUE 'Y'.        00740000
+           88 FECHANOOK                               VALUE 'N'.        00750000
+                                                                        00760000
+       77  WS-CLIENTE-VALIDO       PIC X.                               00770000
+           88 CLIENTEOK                               VALUE 'Y'.        00780000
+           88 CLIENTENOOK                             VALUE 'N'.        00790000
+                                                                        00800000
+                                                                        00810000
+       LINKAGE SECTION.                                                 00820000
+                                                                        00830000
+       01 DFHCOMMAREA PIC X(20).                                        00840000
+                                                                        00850000
+       PROCEDURE DIVISION.                                              00860000
+                                                                        00870000
+                                                                        00880000
+       MAIN-PROGRAM-INICIO.                                             00890000
+                                                                        00900000
+           PERFORM 1000-I-INICIO  THRU 1000-F-INICIO.                   00910000
+                                                                        00920000
+           PERFORM 2000-I-PROCESO THRU 2000-F-PROCESO.                  00930000
+                                                                        00940000
+           PERFORM 9999-I-FINAL THRU 9999-F-FINAL.                      00950000
+                                                                        00960000
+       MAIN-PROGRAM-FINAL.                                              00970000
+                                                                        00980000
+                                                                        00990000
+       1000-I-INICIO.                                                   01000000
+                                                                        01010000
+           MOVE LOW-VALUES TO MAP3A18O.                                 01020001
+           MOVE DFHCOMMAREA TO WS-COMMAREA.                             01030000
+                                                                        01040000
+           IF WS-PRIMERA = 0                                            01050000
+                                                                        01060000
+               MOVE LENGTH OF MAP3A18O TO WS-LONG                       01070001
+               MOVE CT-MNS-01 TO MSGO                                   01080000
+               PERFORM 7000-I-TIME THRU 7000-F-TIME                     01090000
+                                                                        01100000
+               EXEC CICS                                                01110000
+                  SEND MAP (WS-MAP-00)                                  01120000
+                       MAPSET (WS-MAPSET-00)                            01130000
+                       FROM (MAP3A18O)                                  01140001
+                       LENGTH (WS-LONG)                                 01150000
+                       ERASE                                            01160000
+                       FREEKB                                           01170000
+               END-EXEC                                                 01180000
+               MOVE 1 TO WS-PRIMERA                                     01190000
+               PERFORM 9999-I-FINAL THRU 9999-F-FINAL                   01200000
+                                                                        01210000
+           END-IF.                                                      01220000
+                                                                        01230000
+                                                                        01240000
+       1000-F-INICIO. EXIT.                                             01250000
+                                                                        01260000
+       2000-I-PROCESO.                                                  01270000
+                                                                        01280000
+           MOVE LENGTH OF MAP3A18O TO WS-LONG                           01290001
+                                                                        01300000
+           EXEC CICS                                                    01310000
+                RECEIVE MAP    (WS-MAP-00)                              01320000
+                        MAPSET (WS-MAPSET-00)                           01330000
+                        INTO   (MAP3A18I)                               01340001
+                        RESP   (WS-RESP)                                01350000
+           END-EXEC                                                     01360000
+                                                                        01370000
+           MOVE TIPDOCI      TO WS-USER-TIPDOC.                         01380000
+           MOVE NUMDOCI      TO WS-USER-NRODOC.                         01390000
+                                                                        01400000
+           PERFORM 2200-I-TECLAS THRU 2200-F-TECLAS.                    01410000
+                                                                        01420000
+       2000-F-PROCESO. EXIT.                                            01430000
+                                                                        01440000
+       2200-I-TECLAS.                                                   01450000
+                                                                        01460000
+           EVALUATE EIBAID                                              01470000
+                                                                        01480000
+             WHEN DFHENTER                                              01490000
+               PERFORM 3000-I-ENTER THRU 3000-F-ENTER                   01500000
+             WHEN DFHPF3                                                01510000
+               PERFORM 3100-I-PF3   THRU 3100-F-PF3                     01520000
+             WHEN DFHPF12                                               01530000
+               PERFORM 9000-I-PF12  THRU 9000-F-PF12                    01540000
+             WHEN OTHER                                                 01550000
+               MOVE CT-MNS-10        TO  MSGO                           01560000
+               PERFORM 7000-I-TIME  THRU 7000-F-TIME                    01570000
+               EXEC CICS                                                01580000
+                    SEND MAP    (WS-MAP-00)                             01590000
+                      MAPSET (WS-MAPSET-00)                             01600000
+                      FROM   (MAP3A18O)                                 01610001
+                      LENGTH (WS-LONG)                                  01620000
+                      ERASE                                             01630000
+               END-EXEC                                                 01640000
+           END-EVALUATE.                                                01650000
+                                                                        01660000
+       2200-F-TECLAS. EXIT.                                             01670000
+                                                                        01680000
+       3000-I-ENTER.                                                    01690000
+                                                                        01700000
+           PERFORM    3500-I-VALIDAR THRU 3500-F-VALIDAR                01710000
+                                                                        01720000
+           IF CLIENTEOK                                                 01730000
+              PERFORM 4000-I-WRITE   THRU 4000-F-WRITE                  01740000
+           ELSE                                                         01750000
+              PERFORM 5000-I-SEND THRU 5000-F-SEND                      01760000
+                                                                        01770000
+           END-IF.                                                      01780000
+                                                                        01790000
+       3000-F-ENTER. EXIT.                                              01800000
+                                                                        01810000
+       3100-I-PF3.                                                      01820000
+                                                                        01830000
+           MOVE LOW-VALUES TO MAP3A18O.                                 01840001
+           PERFORM 7000-I-TIME THRU 7000-F-TIME.                        01850000
+           MOVE CT-MNS-01      TO MSGO                                  01860000
+                                                                        01870000
+           EXEC CICS                                                    01880000
+               SEND MAP    (WS-MAP-00)                                  01890000
+               MAPSET (WS-MAPSET-00)                                    01900000
+               FROM   (MAP3A18O)                                        01910001
+               LENGTH (WS-LONG)                                         01920000
+               ERASE                                                    01930000
+           END-EXEC.                                                    01940000
+                                                                        01950000
+       3100-F-PF3. EXIT.                                                01960000
+                                                                        01970000
+       3500-I-VALIDAR.                                                  01980000
+                                                                        01990000
+           SET CLIENTEOK  TO TRUE.                                      02000000
+                                                                        02010000
+           MOVE TIPDOCI TO WS-TIP-DOC.                                  02020000
+                                                                        02030000
+           IF NOT WS-TIP-DOC-BOOLEAN                                    02040000
+              SET CLIENTENOOK TO TRUE                                   02050000
+              MOVE CT-MNS-03  TO MSGO                                   02060000
+           ELSE                                                         02070000
+              IF NUMDOCI IS NOT NUMERIC                                 02080000
+                 SET CLIENTENOOK TO TRUE                                02090000
+                 MOVE CT-MNS-04  TO MSGO                                02100000
+              ELSE                                                      02110000
+                 IF NUMDOCI IS EQUAL ZEROS                              02120000
+                    SET CLIENTENOOK TO TRUE                             02130000
+                    MOVE CT-MNS-04  TO MSGO                             02140000
+              END-IF                                                    02150000
+           END-IF.                                                      02160000
+                                                                        02170000
+           IF CLIENTEOK                                                 02180000
+              MOVE TIPDOCI TO WS-USER-TIPDOC                            02190000
+              MOVE NUMDOCI TO WS-USER-NRODOC                            02200000
+                                                                        02210000
+              EXEC CICS                                                 02220000
+                 READ DATASET ('PERSONAS')                              02230003
+                      RIDFLD  (WS-USER-DATA)                            02240000
+                      INTO (REG-PERSONA)                                02250000
+                      LENGTH (CT-DATASET-LEN)                           02260000
+                      EQUAL                                             02270000
+                      RESP (WS-RESP)                                    02280000
+              END-EXEC                                                  02290000
+                                                                        02300000
+              EVALUATE WS-RESP                                          02310000
+                  WHEN DFHRESP(NORMAL)                                  02320000
+                     MOVE CT-MNS-02  TO MSGO                            02330000
+                                                                        02340000
+                  WHEN DFHRESP(NOTFND)                                  02350000
+                     PERFORM 3600-I-CONTINUA-VAL                        02360000
+                             THRU 3600-F-CONTINUA-VAL                   02370000
+                  WHEN OTHER                                            02380000
+                     MOVE CT-MNS-09            TO  MSGO                 02390000
+                                                                        02400000
+              END-EVALUATE                                              02410000
+           END-IF.                                                      02420000
+       3500-F-VALIDAR. EXIT.                                            02430000
+                                                                        02440000
+       3600-I-CONTINUA-VAL.                                             02450000
+                                                                        02460000
+           IF NOMAPEI IS EQUAL TO (SPACES OR LOW-VALUES)                02470000
+              MOVE -1 TO NOMAPEL                                        02480000
+              SET CLIENTENOOK TO TRUE                                   02490000
+              MOVE CT-MNS-05  TO MSGO                                   02500000
+           ELSE                                                         02510000
+              PERFORM 3700-I-FECHA THRU 3700-F-FECHA                    02520000
+              IF FECHANOOK                                              02530000
+                 SET CLIENTENOOK TO TRUE                                02540000
+                 MOVE CT-MNS-06  TO MSGO                                02550000
+              ELSE                                                      02560000
+                 IF SEXOI IS NOT EQUAL TO ('F' AND 'M' AND 'O')         02570000
+                    MOVE -1 TO SEXOL                                    02580000
+                    SET CLIENTENOOK TO TRUE                             02590000
+                    MOVE CT-MNS-07  TO MSGO                             02600000
+                 END-IF                                                 02610000
+              END-IF                                                    02620000
+           END-IF.                                                      02630000
+                                                                        02640000
+       3600-F-CONTINUA-VAL. EXIT.                                       02650000
+                                                                        02660000
+       3700-I-FECHA.                                                    02670000
+                                                                        02680000
+           SET FECHAOK TO TRUE.                                         02690000
+                                                                        02700000
+           MOVE ANIOI TO WS-ANIO                                        02710000
+           MOVE MESI  TO WS-MES                                         02720000
+           MOVE DIAI  TO WS-DIA                                         02730000
+                                                                        02740000
+           IF WS-ANIO IS NOT NUMERIC OR                                 02750000
+              WS-MES  IS NOT NUMERIC OR                                 02760000
+              WS-DIA  IS NOT NUMERIC                                    02770000
+                 SET FECHANOOK TO TRUE                                  02780000
+           END-IF.                                                      02790000
+                                                                        02800000
+           IF FECHAOK                                                   02810000
+                 IF WS-ANIO < 1950 OR WS-ANIO > 2020                    02820000
+                    SET FECHANOOK TO TRUE                               02830000
+                 END-IF                                                 02840000
+                                                                        02850000
+                 IF WS-MES < 00 OR WS-MES > 13                          02860000
+                    SET FECHANOOK TO TRUE                               02870000
+                 END-IF                                                 02880000
+                                                                        02890000
+                 IF WS-MES = 02                                         02900000
+                  IF WS-DIA > 28                                        02910000
+                     SET FECHANOOK TO TRUE                              02920000
+                  END-IF                                                02930000
+                 END-IF                                                 02940000
+                                                                        02950000
+                 IF WS-MES IS EQUAL TO (4 OR 6 OR 9 OR 11) AND          02960000
+                  WS-DIA > 30                                           02970000
+                     SET FECHANOOK TO TRUE                              02980000
+                 END-IF                                                 02990000
+                 IF WS-MES IS EQUAL TO                                  03000000
+                   (1 OR 3 OR 5 OR 7 OR 8 OR 10 OR 12) AND              03010000
+                   WS-DIA > 31                                          03020000
+                     SET FECHANOOK TO TRUE                              03030000
+                 END-IF                                                 03040000
+                                                                        03050000
+           END-IF.                                                      03060000
+                                                                        03070000
+       3700-F-FECHA. EXIT.                                              03080000
+                                                                        03090000
+       4000-I-WRITE.                                                    03100000
+                                                                        03110000
+           MOVE SPACES TO REG-PERSONA.                                  03120000
+           MOVE TIPDOCI      TO PER-TIP-DOC.                            03130000
+           MOVE NUMDOCI      TO PER-NRO-DOC.                            03140000
+           MOVE ZEROS        TO PER-CLI-NRO.                            03150000
+           MOVE NOMAPEI      TO PER-NOMAPE.                             03160000
+           MOVE WS-FECHA-VAL TO PER-CLI-AAAAMMDD.                       03170000
+           MOVE SPACES       TO PER-DIRECCION.                          03180000
+           MOVE SPACES       TO PER-LOCALIDAD.                          03190000
+           MOVE SPACES       TO PER-EMAIL.                              03200000
+           MOVE SPACES       TO PER-TELEFONO.                           03210000
+           MOVE SEXOI        TO PER-SEXO.                               03220000
+                                                                        03230000
+                                                                        03240000
+                                                                        03250000
+           EXEC CICS WRITE                                              03260000
+              FILE      (CT-DATASET)                                    03270000
+              FROM      (REG-PERSONA)                                   03280000
+              RIDFLD    (WS-USER-DATA)                                  03290000
+              LENGTH    (CT-DATASET-LEN)                                03300000
+              KEYLENGTH (CT-DATASET-KEYLEN)                             03310000
+              RESP      (WS-RESP)                                       03320000
+           END-EXEC.                                                    03330000
+                                                                        03340000
+           EVALUATE WS-RESP                                             03350000
+                WHEN DFHRESP(DUPREC)                                    03360000
+                   MOVE CT-MNS-02  TO MSGO                              03370000
+                WHEN DFHRESP(NORMAL)                                    03380000
+                   MOVE CT-MNS-08  TO MSGO                              03390000
+                WHEN OTHER                                              03400000
+                   MOVE CT-MNS-09  TO MSGO                              03410000
+           END-EVALUATE.                                                03420000
+                                                                        03430000
+           PERFORM 5000-I-SEND THRU 5000-F-SEND.                        03440000
+                                                                        03450000
+       4000-F-WRITE. EXIT.                                              03460000
+                                                                        03470000
+       5000-I-SEND.                                                     03480000
+                                                                        03490000
+           PERFORM    7000-I-TIME    THRU 7000-F-TIME.                  03500000
+      *    MOVE       WS-USER-TIPDOC  TO  TIPDOCO.                      03510000
+      *    MOVE       WS-USER-NRODOC  TO  NUMDOCO.                      03520000
+                                                                        03530000
+           EXEC CICS                                                    03540000
+               SEND MAP    (WS-MAP-00)                                  03550000
+               MAPSET (WS-MAPSET-00)                                    03560000
+               FROM   (MAP3A18O)                                        03570001
+               LENGTH (WS-LONG)                                         03580000
+               ERASE                                                    03590000
+           END-EXEC.                                                    03600000
+                                                                        03610000
+                                                                        03620000
+       5000-F-SEND. EXIT.                                               03630000
+                                                                        03640000
+       7000-I-TIME.                                                     03650000
+                                                                        03660000
+           EXEC CICS ASKTIME                                            03670000
+             ABSTIME (WS-ABSTIME)                                       03680000
+           END-EXEC.                                                    03690000
+                                                                        03700000
+           EXEC CICS FORMATTIME                                         03710000
+             ABSTIME (WS-ABSTIME)                                       03720000
+             DDMMYYYY (WS-FECHA) DATESEP(WS-SEP-DATE)                   03730000
+             TIME (WS-HORA) TIMESEP(WS-SEP-HOUR)                        03740000
+           END-EXEC.                                                    03750000
+                                                                        03760000
+           MOVE WS-FECHA TO FECHAO.                                     03770000
+                                                                        03780000
+       7000-F-TIME. EXIT.                                               03790000
+                                                                        03800000
+       9000-I-PF12.                                                     03810000
+                                                                        03820000
+           EXEC CICS SEND CONTROL                                       03830000
+              ERASE                                                     03840000
+           END-EXEC.                                                    03850000
+                                                                        03860000
+           EXEC CICS XCTL                                               03870000
+              PROGRAM ('PGMMEA18')                                      03880001
+           END-EXEC.                                                    03890000
+                                                                        03900000
+           EXEC CICS                                                    03910000
+              RETURN                                                    03920000
+           END-EXEC.                                                    03930000
+                                                                        03940000
+       9000-F-PF12. EXIT.                                               03950000
+                                                                        03960000
+       9999-I-FINAL.                                                    03970000
+                                                                        03980000
+           EXEC CICS                                                    03990000
+             RETURN                                                     04000000
+             TRANSID  ('DA18')                                          04010001
+             COMMAREA (WS-COMMAREA)                                     04020000
+           END-EXEC.                                                    04030000
+                                                                        04040000
+       9999-F-FINAL. EXIT.                                              04050000
+                                                                        04060000
+

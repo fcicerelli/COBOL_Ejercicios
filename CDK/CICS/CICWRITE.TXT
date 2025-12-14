@@ -1,0 +1,58 @@
+       IDENTIFICATION DIVISION.                                         00001001
+       PROGRAM-ID. PGMALXXX.                                            00002001
+       DATA DIVISION.                                                   00003001
+       FILE SECTION.                                                    00004001
+       WORKING-STORAGE SECTION.                                         00005001
+                                                                        00006001
+       01  WS-VARIABLES.                                                00007001
+           03 CT-DATASET           PIC X(08)  VALUE 'PERSONA'.          00008001
+           03 CT-DATASET-LEN       PIC S9(04) COMP VALUE 160.           00009001
+           03 CT-DATASET-KEYLEN    PIC S9(04) COMP VALUE 013.           00009101
+                                                                        00009201
+       COPY MAP3D1F.                                                    00009301
+       COPY DFHBMSCA.                                                   00009401
+       COPY DFHAID.                                                     00009501
+       COPY CPPERSON.                                                   00009601
+       LINKAGE SECTION.                                                 00009701
+                                                                        00009801
+       01 DFHCOMMAREA PIC X(20).                                        00009901
+                                                                        00010001
+       PROCEDURE DIVISION.                                              00010101
+                                                                        00010201
+                                                                        00010301
+       MAIN-PROGRAM-INICIO.                                             00010401
+       4000-I-WRITE.                                                    00011000
+                                                                        00020000
+           MOVE SPACES TO REG-PERSONA.                                  00030000
+           MOVE TIPDOCI      TO PER-TIP-DOC.                            00040000
+           MOVE NUMDOCI      TO PER-NRO-DOC.                            00050000
+           MOVE ZEROS        TO PER-CLI-NRO.                            00060000
+           MOVE NOMAPEI      TO PER-NOMAPE.                             00070000
+           MOVE WS-FECHA-VAL TO PER-CLI-AAAAMMDD.                       00080000
+           MOVE SPACES       TO PER-DIRECCION.                          00090000
+           MOVE SPACES       TO PER-LOCALIDAD.                          00100000
+           MOVE SPACES       TO PER-EMAIL.                              00110000
+           MOVE SPACES       TO PER-TELEFONO.                           00120000
+           MOVE SEXOI        TO PER-SEXO.                               00130000
+                                                                        00140000
+                                                                        00150000
+                                                                        00160000
+           EXEC CICS WRITE                                              00170000
+              FILE      (CT-DATASET)                                    00180000
+              FROM      (REG-PERSONA)                                   00190000
+              RIDFLD    (WS-USER-DATA)                                  00200000
+              LENGTH    (CT-DATASET-LEN)                                00210000
+              KEYLENGTH (CT-DATASET-KEYLEN)                             00220000
+              RESP      (WS-RESP)                                       00230000
+           END-EXEC.                                                    00240000
+                                                                        00250000
+           EVALUATE WS-RESP                                             00260000
+                WHEN DFHRESP(DUPREC)                                    00270000
+                   MOVE CT-MNS-02  TO MSGO                              00280000
+                WHEN DFHRESP(NORMAL)                                    00290000
+                   MOVE CT-MNS-08  TO MSGO                              00300000
+                WHEN OTHER                                              00310000
+                   MOVE CT-MNS-09  TO MSGO                              00320000
+           END-EVALUATE.                                                00330000
+                                                                        00340000
+

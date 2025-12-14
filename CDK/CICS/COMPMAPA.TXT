@@ -1,0 +1,11 @@
+//KC03J21A JOB CLASS=A,MSGCLASS=O,MSGLEVEL=(1,1),NOTIFY=&SYSUID
+//***********************************************
+//*   COMPILADOR MAPAS CICS                     *
+//*   ALUMLIB DIGITAR SU USERID ALUMNO          *
+//*   MAPNAME DIGITAR SU NOMBRE DE MAPA         *
+//***********************************************
+//JCLLIB JCLLIB ORDER=KC02788.ALU9999.PROCLIB
+//STEP1  EXEC PROCMAPA,
+//       ALUMLIB=KC03J21.CURSOS,
+//       MAPNAME=MAP3A18
+

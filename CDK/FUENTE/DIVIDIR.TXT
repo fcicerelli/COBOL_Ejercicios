@@ -1,0 +1,23 @@
+       IDENTIFICATION DIVISION.                                         00010008
+       PROGRAM-ID. DIVIDIR.                                             00020006
+       DATA DIVISION.                                                   00030006
+       FILE SECTION.                                                    00040006
+       WORKING-STORAGE SECTION.                                         00050006
+       77 X         PIC 99.                                             00060009
+       77 Y         PIC 99.                                             00070009
+       77 Z         PIC 99.                                             00080009
+       77 RESIDUO   PIC 99.                                             00090009
+       PROCEDURE DIVISION.                                              00100006
+       MAIN-PROCEDURE.                                                  00110006
+      *     DISPLAY "ESCRIBA EL NUMERADOR: ".                           00120009
+      *     ACCEPT X.                                                   00130009
+      *     DISPLAY "ESCRIBA EL DENOMINADOR: ".                         00140009
+      *     ACCEPT Y.                                                   00150009
+            MOVE 5 TO X.                                                00151009
+            MOVE 2 TO Y.                                                00152009
+            DIVIDE X BY Y GIVING Z REMAINDER RESIDUO.                   00160006
+            DISPLAY "EL VALOR DE LA DIVISION ES: " Z.                   00170007
+            DISPLAY "EL RESIDUO DE LA DIVISION ES: " RESIDUO.           00180007
+            STOP RUN.                                                   00190006
+       END PROGRAM DIVIDIR.                                             00200006
+

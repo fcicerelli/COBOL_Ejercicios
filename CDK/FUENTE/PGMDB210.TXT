@@ -1,0 +1,191 @@
+       IDENTIFICATION DIVISION.                                         00010007
+        PROGRAM-ID PGMDB210.                                            00020008
+      **************************************                            00030007
+      *                                    *                            00040007
+      *  PROGRAMA DE PRUEBA DE COMPILADOR  *                            00050007
+      *  A SU VEZ SIRVE COMO MODELO DB2    *                            00060007
+      *                                    *                            00070007
+      *  EJECUTAR CON     JCLDBXX          *                            00071013
+      *                                    *                            00072013
+      *                                    *                            00073013
+      **************************************                            00080007
+       ENVIRONMENT DIVISION.                                            00090007
+       INPUT-OUTPUT SECTION.                                            00100007
+       FILE-CONTROL.                                                    00110007
+             SELECT SALIDA  ASSIGN DDSALID                              00120007
+                    FILE STATUS IS WS-SAL-CODE.                         00130007
+       DATA DIVISION.                                                   00140007
+       FILE SECTION.                                                    00150007
+       FD SALIDA                                                        00160007
+            BLOCK CONTAINS 0 RECORDS                                    00170007
+            RECORDING MODE IS F.                                        00180007
+       01 REG-SALIDA     PIC X(80).                                     00190007
+                                                                        00200007
+       WORKING-STORAGE SECTION.                                         00210007
+                                                                        00220007
+       77  FILLER        PIC X(26) VALUE '* INICIO WORKING-STORAGE *'.  00230007
+       77  FILLER        PIC X(26) VALUE '* CODIGOS RETORNO FILES  *'.  00240007
+       77  NOT-FOUND     PIC S9(9) COMP VALUE  +100.                    00250007
+       77  WS-SQLCODE    PIC S9(09) VALUE ZEROS.                        00260007
+       77  WS-SAL-CODE   PIC XX    VALUE SPACES.                        00270007
+       77  FILLER        PIC X(26) VALUE '* DESCRIPCION SQLCA      *'.  00280007
+                                                                        00290007
+      *****************************************************             00300007
+      * LAYOUT DEL REGISTRO DE CUENTAS                    *             00310007
+      *****************************************************             00320007
+           EXEC SQL  INCLUDE TBCURCTA   END-EXEC.                       00330007
+                                                                        00340007
+      *****************************************************             00341009
+      * LAYOUT DEL REGISTRO DE CLIENTES                   *             00342009
+      *****************************************************             00343009
+           EXEC SQL  INCLUDE TBCURCLI   END-EXEC.                       00344009
+                                                                        00345009
+       77  FILLER        PIC X(26) VALUE '* LAYOUT SALIDA TITULOS  *'.  00350007
+       01  WS-TITULOS.                                                  00360007
+           02 FILLER     PIC X(6)   VALUE 'PROYNO'.                     00370007
+           02 FILLER     PIC X(26)  VALUE '   DESCRIPCION PROYECTO   '. 00380007
+           02 FILLER     PIC X(8)   VALUE '    HORA'.                   00390007
+                                                                        00400007
+       01  FILLER        PIC X(26) VALUE '* LAYOUT SALIDA DETALLE  *'.  00410007
+       01  WS-DETALLE.                                                  00420007
+           02 WS-SAL-NUM PIC X(5)   VALUE SPACES.                       00430007
+           02 FILLER     PIC X      VALUE SPACES.                       00440007
+           02 WS-SAL-DES PIC X(30)  VALUE SPACES.                       00450007
+           02 FILLER     PIC X      VALUE SPACES.                       00460007
+           02 WS-SAL-HOR    PIC X(3)   VALUE SPACES.                    00470007
+                                                                        00480007
+       77 WS-REG-SALIDA     PIC X(80).                                  00490007
+                                                                        00500007
+      *****************************************************             00510007
+      * SQLCA COMMUNICATION AREA CON EL DB2               *             00520007
+      *****************************************************             00530007
+           EXEC SQL INCLUDE SQLCA  END-EXEC.                            00540007
+                                                                        00550007
+       01  FILLER        PIC X(26) VALUE '* FINAL  WORKING-STORAGE *'.  00560007
+      *****************************************************             00570007
+       PROCEDURE DIVISION.                                              00580007
+      **************************************                            00590007
+      *                                    *                            00600007
+      *  CUERPO PRINCIPAL DEL PROGRAMA     *                            00610007
+      *                                    *                            00620007
+      **************************************                            00630007
+       0000-MAIN-PROCESS.                                               00640007
+                                                                        00650007
+           PERFORM 1000-INICIO  THRU F-1000-INICIO.                     00660007
+                                                                        00670007
+           PERFORM 2000-PROCESO THRU F-2000-PROCESO.                    00680007
+                                                                        00690007
+           PERFORM 9999-FINAL   THRU F-9999-FINAL.                      00700007
+                                                                        00710007
+           GOBACK.                                                      00720007
+                                                                        00730007
+      **************************************                            00740007
+      *                                    *                            00750007
+      *  CUERPO INICIO APERTURA FILES      *                            00760007
+      *                                    *                            00770007
+      **************************************                            00780007
+       1000-INICIO.                                                     00790007
+           OPEN OUTPUT SALIDA.                                          00800007
+                                                                        00810007
+           IF WS-SAL-CODE IS NOT EQUAL '00'                             00820007
+              DISPLAY '* ERROR EN OPEN SALIDA  = ' WS-SAL-CODE          00830007
+              MOVE 3333 TO RETURN-CODE                                  00840007
+              PERFORM 9999-FINAL THRU F-9999-FINAL                      00850007
+           END-IF.                                                      00860007
+                                                                        00870007
+           MOVE WS-TITULOS TO WS-REG-SALIDA.                            00880007
+           WRITE REG-SALIDA FROM WS-REG-SALIDA.                         00890007
+                                                                        00900007
+           IF WS-SAL-CODE IS NOT EQUAL '00'                             00910007
+              DISPLAY '* ERROR EN WRITE SALIDA TITULOS  = ' WS-SAL-CODE 00920007
+              MOVE 3333 TO RETURN-CODE                                  00930007
+              PERFORM 9999-FINAL THRU F-9999-FINAL                      00940007
+           END-IF.                                                      00950007
+                                                                        00960007
+       F-1000-INICIO. EXIT.                                             00970007
+                                                                        00980007
+      **************************************                            00990007
+      *                                    *                            01000007
+      *  CUERPO PRINCIPAL DE PROCESOS      *                            01010007
+      *  LECTURA TABLA TBCURCTA            *                            01020007
+      *  GRABACION SALIDA CON LOS CAMPOS   *                            01030007
+      *            NROCLI                  *                            01040007
+      *                                    *                            01050007
+      **************************************                            01060007
+       2000-PROCESO.                                                    01070007
+      *****************************************************             01080007
+      * ACCESO A TBCURCTA                                 *             01090011
+      *****************************************************             01100007
+                EXEC SQL SELECT TIPCUEN, NROCUEN, NROCLI                01110007
+                     INTO :WS-TIPCUEN, :WS-NROCUEN, :WS-NROCLI          01120007
+                     FROM KC02803.TBCURCTA                              01130010
+                          WHERE  NROCLI = 124                           01140012
+                END-EXEC.                                               01150007
+                                                                        01160013
+                IF SQLCODE = NOT-FOUND                                  01170007
+                   DISPLAY 'TABLA    VACÌA: '                           01180007
+                ELSE                                                    01190007
+                    IF SQLCODE = 0                                      01200007
+                      DISPLAY 'SQLCODE  = '    SQLCODE                  01201013
+                              '  TIPCUEN  = '  WS-TIPCUEN               01210013
+                              '  NROCUEN  = '  WS-NROCUEN               01210113
+                              '  NROCLI   = '  WS-NROCLI                01210213
+                      DISPLAY ' '                                       01210313
+                      MOVE WS-TIPCUEN       TO  WS-SAL-NUM              01211013
+                      MOVE WS-NROCUEN       TO  WS-SAL-DES              01212013
+                      MOVE WS-NROCLI        TO  WS-SAL-HOR              01213013
+                      MOVE WS-DETALLE  TO WS-REG-SALIDA                 01220007
+                      WRITE REG-SALIDA FROM WS-REG-SALIDA               01230007
+                    ELSE                                                01240007
+                         MOVE SQLCODE TO WS-SQLCODE                     01250007
+                         DISPLAY 'ERROR DB2 '  WS-SQLCODE               01260007
+                END-IF                                                  01270007
+                END-IF.                                                 01280007
+                                                                        01290007
+      *****************************************************             01291011
+      * ACCESO A TBCURCLI                                 *             01292011
+      *****************************************************             01293011
+                EXEC SQL SELECT TIPDOC, NRODOC, NROCLI                  01294011
+                     INTO :WT-TIPDOC, :WT-NRODOC, :WT-NROCLI            01295011
+                     FROM KC02803.TBCURCLI                              01296011
+                          WHERE  NROCLI = 10                            01297011
+                END-EXEC.                                               01298011
+                                                                        01299013
+                IF SQLCODE = NOT-FOUND                                  01299211
+                   DISPLAY 'TABLA    VACÌA: '                           01299311
+                ELSE                                                    01299411
+                    IF SQLCODE = 0                                      01299511
+                      DISPLAY 'SQLCODE  = '    SQLCODE                  01299713
+                              '  TIPDOC   = '  WT-TIPDOC                01299813
+                              '  NRODOC   = '  WT-NRODOC                01299913
+                              '  NROCLI   = '  WT-NROCLI                01300013
+                      DISPLAY ' '                                       01300113
+                       MOVE WT-TIPDOC        TO  WS-SAL-NUM             01300213
+                       MOVE WT-NRODOC        TO  WS-SAL-DES             01300313
+                       MOVE WT-NROCLI        TO  WS-SAL-HOR             01300413
+                      MOVE WS-DETALLE  TO WS-REG-SALIDA                 01300511
+                      WRITE REG-SALIDA FROM WS-REG-SALIDA               01300611
+                    ELSE                                                01300711
+                         MOVE SQLCODE TO WS-SQLCODE                     01300811
+                         DISPLAY 'ERROR DB2 '  WS-SQLCODE               01300911
+                END-IF                                                  01301011
+                END-IF.                                                 01301111
+                                                                        01301211
+       F-2000-PROCESO. EXIT.                                            01302007
+                                                                        01310007
+      **************************************                            01320007
+      *                                    *                            01330007
+      *  CUERPO FINAL CIERRE DE SALIDA     *                            01340007
+      *                                    *                            01350007
+      **************************************                            01360007
+       9999-FINAL.                                                      01370007
+           CLOSE SALIDA.                                                01380007
+                                                                        01390007
+           IF WS-SAL-CODE IS NOT EQUAL '00'                             01400007
+              DISPLAY '* ERROR EN CLOSE SALIDA  = ' WS-SAL-CODE         01410007
+              MOVE 9999 TO RETURN-CODE                                  01420007
+           END-IF.                                                      01430007
+                                                                        01440007
+       F-9999-FINAL.  EXIT.                                             01450007
+                                                                        01460007
+

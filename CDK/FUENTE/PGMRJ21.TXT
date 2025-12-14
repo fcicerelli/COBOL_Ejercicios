@@ -1,0 +1,605 @@
+       IDENTIFICATION DIVISION.
+      *                                                         *
+       PROGRAM-ID. PGMRJ21.
+      **********************************************************
+      *                                                        *
+      *  PROGRAMA RECUPERATORIO DB2 - CORTE DE CONTROL DOBLE   *
+      *                                                        *
+      *           CORTE MAYOR AÒO DE NACIMIENTO                *
+      *           CORTE MENOR SEXO                             *
+      *                                                        *
+      **********************************************************
+      *      MANTENIMIENTO DE PROGRAMA                         *
+      **********************************************************
+      *  FECHA   *    DETALLE        * COD *
+      **************************************
+      *          *                   *     *
+      *          *                   *     *
+      **************************************
+
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       SPECIAL-NAMES.
+           DECIMAL-POINT IS COMMA.
+
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+
+            SELECT SALIDA  ASSIGN DDSALID
+                   FILE STATUS IS FS-SALIDA.
+
+       DATA DIVISION.
+       FILE SECTION.
+
+       FD SALIDA
+           BLOCK CONTAINS 0 RECORDS
+           RECORDING MODE IS F.
+
+       01 REG-SALIDA PIC X(93).
+
+      **************************************
+       WORKING-STORAGE SECTION.
+      **************************************
+
+       77  FILLER        PIC X(26) VALUE '* INICIO WORKING-STORAGE *'.
+
+      ************* FILE  STATUS ***********
+       77  FS-SALIDA                  PIC XX.
+
+      ************** CONTADORES ************
+       77  WS-CANT-LEIDOS             PIC 9(3)  VALUE ZEROS.
+       77  WS-CANT-FECNAC             PIC 9(3)  VALUE ZEROS.
+       77  WS-CANT-FECNAC-TOT         PIC 9(3)  VALUE ZEROS.
+       77  WS-CANT-SEXO               PIC 9(3)  VALUE ZEROS.
+       77  WS-CANT-SEXO-TOT           PIC 9(3)  VALUE ZEROS.
+       77  WS-CANT-FECNAC-EDIT        PIC ZZ9   VALUE ZEROS.
+      *77  WS-CANT-TIP-EDIT           PIC ZZ9   VALUE ZEROS.
+      *77  WS-CANT-TOTAL-EDIT         PIC ZZ9   VALUE ZEROS.
+       77  WS-CANT-IMPRESOS           PIC 9(3)  VALUE ZEROS.
+       77  WS-CANT-LINEA              PIC 9(3)  VALUE ZEROS.
+       77  WS-CANT-PAGINA             PIC 9(3)  VALUE ZEROS.
+
+      ************** ACUMULADORES **********
+       77  WS-ACUM-SALDOS-FECNAC     PIC S9(12)V99 COMP-3 VALUE ZEROS.
+       77  WS-ACUM-SALDOS-SEXO       PIC S9(12)V99 COMP-3 VALUE ZEROS.
+
+      ********** VARIABLES GENERALES *******
+       77  WS-FECNAC-ANT              PIC X(10) VALUE SPACES.
+       77  WS-FECNAC-ANT-EDIT         PIC X(10) VALUE SPACES.
+       77  WS-SEXO-ANT                PIC X(1)  VALUE SPACE.
+       77  WS-SEXO-ANT-EDIT           PIC X(1)  VALUE SPACE.
+
+      *************** BANDERAS *************
+       01  WS-FLAG-FIN      PIC X.
+           88  WS-NO-FIN-PROCESO  VALUE ' '.
+           88  WS-FIN-PROCESO     VALUE 'F'.
+
+      *********** LAYOUT SEPARADOR *********
+       01  WS-SEPARADOR.
+           03 WS-SEPARADORES   PIC X(132) VALUE ALL '-'.
+
+      *********** LAYOUT TITULO ************
+       01  WS-TITULO.
+           03  FILLER              PIC X(8)    VALUE ' FECHA: '.
+           03  WS-SAL-FECHA-AA      PIC 99            VALUE ZEROS.
+           03  FILLER           PIC X             VALUE '-'.
+           03  WS-SAL-FECHA-MM      PIC 99            VALUE ZEROS.
+           03  FILLER           PIC X             VALUE '-'.
+           03  WS-SAL-FECHA-DD      PIC 99            VALUE ZEROS.
+           03  FILLER              PIC X(22)   VALUE
+               ' - DETALLE DE CLIENTES'.
+           03  FILLER              PIC X(29)   VALUE
+               ' - PROG: PGMRJ21 - NRO PAG: '.
+           03  WS-SAL-NROPAGINA    PIC 9(2)    VALUE ZEROS.
+
+      *********** LAYOUT SUBTITULO *********
+       01 WS-SUBTITULO.
+          03  FILLER    PIC X(7)    VALUE 'NROCLI'.
+          03  FILLER    PIC X(3)    VALUE SPACES.
+          03  FILLER    PIC X(30)   VALUE 'NOMBRE Y APELLIDO'.
+          03  FILLER    PIC X(6)    VALUE SPACES.
+          03  FILLER    PIC X(7)    VALUE 'FECNAC '.
+          03  FILLER    PIC X(5)    VALUE SPACES.
+          03  FILLER    PIC X(5)    VALUE 'SEXO '.
+          03  FILLER    PIC X(2)    VALUE SPACES.
+
+      ***** CABECERA CORTE FECNAC *******
+       01 WS-SUBTITULO-CORTE-FECNAC.
+          03  FILLER            PIC X(9)    VALUE 'A—O      '.
+          03  WS-SAL-NRO-FECNAC PIC 9(2)    VALUE ZEROS.
+
+      ***** CABECERA CORTE SEXO ********
+       01 WS-SUBTITULO-CORTE-SEXO.
+          03  WS-SAL-MEN-SEXO   PIC X(18)   VALUE SPACES.
+
+      *********** LAYOUT REGISTROS *********
+       01 WS-REG-SALIDA.
+          03  WS-SAL-NROCLI     PIC X(3)    VALUE SPACES.
+          03  FILLER            PIC X(7)    VALUE SPACES.
+          03  WS-SAL-NOMAPE     PIC X(30)   VALUE SPACES.
+          03  FILLER            PIC X(4)    VALUE SPACES.
+          03  WS-SAL-FECNAC     PIC X(10)   VALUE SPACES.
+          03  FILLER            PIC X(5)    VALUE SPACES.
+          03  WS-SAL-SEXO       PIC X(1)    VALUE SPACES.
+          03  FILLER            PIC X(33)   VALUE SPACES.
+
+      ****** LAYOUT CORTE FECNAC *********
+       01 WS-CORTE-FECNAC.
+          03  FILLER             PIC X(17)  VALUE 'AÒO NACIMIENTO: '.
+      *   03  WS-SAL-CLIENTES    PIC X(3).
+      *   03  FILLER             PIC X(16)  VALUE ' - SALDOS FECNAC'.
+          03  WS-CANT-FECNAC-DISP  PIC -ZZZ.ZZZ.ZZ9,99 VALUE ZEROS.
+      *   03  FILLER             PIC X() VALUE  SPACES.
+
+      *** LAYOUT CORTE SEXO ***
+       01 WS-CORTE-SEXO.
+          03  FILLER             PIC X(16)  VALUE 'CANTIDAD SEXO: '.
+          03  WS-CANT-SEXO-DISP  PIC -ZZZ.ZZZ.ZZ9,99 VALUE ZEROS.
+      *   03  FILLER             PIC X(  )  VALUE  SPACES.
+
+      ********     FECHA DE CORTE   ***************
+       01  WS-CORTE-FECHA.
+           03  WS-CORTE-FECHA-AAAA    PIC X(4)     VALUE ZEROS.
+           03  FILLER                 PIC X(1)     VALUE '-'.
+           03  WS-CORTE-FECHA-MM      PIC XX       VALUE ZEROS.
+           03  FILLER                 PIC X(1)     VALUE '-'.
+           03  WS-CORTE-FECHA-DD      PIC XX       VALUE ZEROS.
+      ********     FECHA DE PROCESO ***************
+
+       01  WS-FECHA.
+           03  WS-FECHA-AA      PIC 99            VALUE ZEROS.
+           03  WS-FECHA-MM      PIC 99            VALUE ZEROS.
+           03  WS-FECHA-DD      PIC 99            VALUE ZEROS.
+
+      **************************************
+      *                SQL                 *
+      **************************************
+
+       77  FILLER        PIC X(26) VALUE '* VARIABLES SQL          *'.
+       77  WS-SQLCODE    PIC +++999 USAGE DISPLAY VALUE ZEROS.
+
+            EXEC SQL
+              INCLUDE SQLCA
+            END-EXEC.
+
+            EXEC SQL
+              INCLUDE TBCURCLI
+            END-EXEC.
+
+      ***************  CURSOR  *************
+            EXEC SQL
+               DECLARE ITEM_CURSOR CURSOR
+               FOR
+               SELECT NROCLI,
+                      NOMAPE,
+                      FECNAC,
+                      SEXO
+                    FROM KC02803.TBCURCLI
+                    ORDER BY FECNAC ASC, SEXO ASC
+            END-EXEC.
+
+       77  FILLER        PIC X(26) VALUE '* FINAL  WORKING-STORAGE *'.
+
+      ******************************************************.
+
+       PROCEDURE DIVISION.
+
+      **************************************
+      *                                    *
+      *  CUERPO PRINCIPAL DEL PROGRAMA     *
+      *                                    *
+      **************************************
+
+       MAIN-PROGRAM.
+
+            PERFORM 1000-I-INICIO   THRU
+                    1000-F-INICIO.
+
+            PERFORM 2000-I-PROCESO  THRU
+                    2000-F-PROCESO        UNTIL WS-FIN-PROCESO.
+
+            PERFORM 9999-I-FINAL    THRU
+                    9999-F-FINAL.
+
+       F-MAIN-PROGRAM. GOBACK.
+
+      **************************************
+      *                                    *
+      *           CUERPO INICIO            *
+      *                                    *
+      **************************************
+
+       1000-I-INICIO.
+
+           ACCEPT WS-FECHA FROM DATE.
+
+           SET WS-NO-FIN-PROCESO TO TRUE
+
+           PERFORM  1100-I-OPEN-CURSOR THRU 1100-F-OPEN-CURSOR
+
+      ********** LECTURA ANTICIPADA ********
+           PERFORM  4100-I-LEER-CURSOR THRU 4100-F-LEER-CURSOR
+
+           OPEN OUTPUT SALIDA
+
+           IF FS-SALIDA IS NOT EQUAL '00'
+                DISPLAY '* ERROR EN OPEN SALIDA = '  FS-SALIDA
+                MOVE 9999 TO RETURN-CODE
+                SET  WS-FIN-PROCESO TO TRUE
+           END-IF
+
+           MOVE 1              TO WS-CANT-PAGINA
+           MOVE WS-CANT-PAGINA TO WS-SAL-NROPAGINA
+           MOVE WS-FECHA-AA    TO WS-SAL-FECHA-AA
+           MOVE WS-FECHA-MM    TO WS-SAL-FECHA-MM
+           MOVE WS-FECHA-DD    TO WS-SAL-FECHA-DD
+
+           PERFORM 5200-I-GRABAR-TITULO    THRU 5200-F-GRABAR-TITULO
+           PERFORM 5300-I-GRABAR-SUBTITULO THRU 5300-F-GRABAR-SUBTITULO
+
+      *** MUEVO VARIABLES DE CORTE A AUX ***
+      *    MOVE WT-FECNAC             TO WS-CORTE-FECHA
+           MOVE WS-CORTE-FECHA-AAAA   TO WS-FECNAC-ANT
+           MOVE WT-SEXO               TO WS-SEXO-ANT
+      *      DISPLAY WS-CORTE-FECHA-AAAA ' = ' WS-FECNAC-ANT
+      *      DISPLAY WT-SEXO ' = ' WS-SEXO-ANT
+           .
+       1000-F-INICIO.   EXIT.
+
+      ************ ABRO CURSOR *************
+       1100-I-OPEN-CURSOR.
+
+           EXEC SQL
+              OPEN ITEM_CURSOR
+           END-EXEC
+
+           IF SQLCODE NOT EQUAL ZEROS
+              MOVE SQLCODE   TO WS-SQLCODE
+              DISPLAY '* ERROR OPEN CURSOR      = ' WS-SQLCODE
+              MOVE 9999 TO RETURN-CODE
+              SET  WS-FIN-PROCESO TO TRUE
+           END-IF
+
+           .
+       1100-F-OPEN-CURSOR. EXIT.
+
+      **************************************
+      *                                    *
+      *  CUERPO PRINCIPAL DEL PROGRAMA     *
+      *                                    *
+      **************************************
+
+       2000-I-PROCESO.
+
+           IF WS-CORTE-FECHA-AAAA = WS-FECNAC-ANT
+               IF WT-SEXO = WS-SEXO-ANT
+      ***** PROCESOS ANTES DEL CORTE *******
+                   ADD 1 TO WS-CANT-FECNAC
+                   ADD 1 TO WS-CANT-SEXO
+      *            ADD WS-SALDO TO WS-ACUM-SALDOS-SEXO
+      *            ADD WS-SALDO TO WS-ACUM-SALDOS-FECNAC
+
+                   PERFORM 5100-I-GRABAR-REGISTRO
+                      THRU 5100-F-GRABAR-REGISTRO
+                   PERFORM 4100-I-LEER-CURSOR THRU 4100-F-LEER-CURSOR
+               ELSE
+                   PERFORM 5500-I-GRAB-CAB-CORT-SEXO
+                      THRU 5500-F-GRAB-CAB-CORT-SEXO
+                   PERFORM 3200-I-CORTE-SEXO
+                      THRU 3200-F-CORTE-SEXO
+                   PERFORM 5300-I-GRABAR-SUBTITULO
+                      THRU 5300-F-GRABAR-SUBTITULO
+           ELSE
+               PERFORM 3100-I-CORTE-FECNAC THRU 3100-F-CORTE-FECNAC
+               PERFORM 5400-I-GRABAR-SEPARADOR
+                  THRU 5400-I-GRABAR-SEPARADOR
+               PERFORM 5300-I-GRABAR-SUBTITULO
+                  THRU 5300-F-GRABAR-SUBTITULO
+           END-IF
+
+      ** PROCESOS INDEPENDIENTES DEL CORTE *
+      *    ADD 1 TO WS-CANT-TOTAL
+
+           .
+       2000-F-PROCESO. EXIT.
+
+      **************************************
+      *         CORTE POR FECNAC           *
+      **************************************
+
+       3100-I-CORTE-FECNAC.
+
+           PERFORM 5500-I-GRAB-CAB-CORT-SEXO
+              THRU 5500-F-GRAB-CAB-CORT-SEXO
+           PERFORM 3200-I-CORTE-SEXO
+              THRU 3200-F-CORTE-SEXO
+           PERFORM 5600-I-GRAB-CAB-CORT-FECNAC
+              THRU 5600-F-GRAB-CAB-CORT-FECNAC
+
+      *    MOVE WS-CANT-FECNAC TO  WS-SAL-CLIENTES
+           MOVE WS-CANT-FECNAC TO  WS-CANT-FECNAC-DISP
+      *    MOVE WS-ACUM-SALDOS-FECNAC  TO  WS-SAL-SALDOS-FECNAC
+
+           WRITE REG-SALIDA    FROM WS-CORTE-FECNAC
+
+           EVALUATE FS-SALIDA
+               WHEN '00'
+                   ADD 1 TO WS-CANT-IMPRESOS
+               WHEN OTHER
+                    DISPLAY '* ERROR EN GRABAR CORTE FECNAC ' FS-SALIDA
+                    MOVE 9999 TO RETURN-CODE
+                    SET WS-FIN-PROCESO TO TRUE
+           END-EVALUATE
+
+      ******* INICIALIZO CONTADORES ********
+           MOVE WS-CANT-FECNAC    TO WS-CANT-FECNAC-TOT
+           MOVE 0 TO WS-CANT-FECNAC
+      ******* INICIALIZO ACUMULADORES ******
+           MOVE 0 TO WS-ACUM-SALDOS-FECNAC
+      ***** MUEVO VARIABLE CORTE A AUX *****
+           MOVE WS-CORTE-FECHA-AAAA TO WS-FECNAC-ANT
+
+           .
+       3100-F-CORTE-FECNAC. EXIT.
+
+      **************************************
+      *         CORTE POR SEXO             *
+      **************************************
+
+       3200-I-CORTE-SEXO.
+
+            MOVE WS-CANT-SEXO TO WS-CANT-SEXO-DISP
+
+            WRITE REG-SALIDA    FROM WS-CORTE-SEXO
+
+            EVALUATE FS-SALIDA
+                WHEN '00'
+                     ADD 1 TO WS-CANT-IMPRESOS
+                WHEN OTHER
+                     DISPLAY '* ERROR EN GRABAR CORTE SEXO ' FS-SALIDA
+                     MOVE 9999 TO RETURN-CODE
+                     SET WS-FIN-PROCESO TO TRUE
+            END-EVALUATE
+
+
+      ******* INICIALIZO ACUMULADORES ******
+            MOVE WS-CANT-SEXO TO WS-CANT-SEXO-TOT
+            MOVE 0            TO WS-CANT-SEXO
+      ***** MUEVO VARIABLE CORTE A AUX *****
+            MOVE WT-SEXO    TO WS-SEXO-ANT
+
+            .
+       3200-F-CORTE-SEXO. EXIT.
+
+      **************************************
+      *            LEER-CURSOR             *
+      **************************************
+
+       4100-I-LEER-CURSOR.
+
+           EXEC SQL
+              FETCH  ITEM_CURSOR
+                     INTO
+                        :DCLTBCURCLI.WT-NROCLI,
+                        :DCLTBCURCLI.WT-NOMAPE,
+                        :DCLTBCURCLI.WT-FECNAC,
+                        :DCLTBCURCLI.WT-SEXO
+           END-EXEC
+
+           EVALUATE TRUE
+
+               WHEN SQLCODE EQUAL ZEROS
+
+                    ADD 1 TO WS-CANT-LEIDOS
+      *             DISPLAY DCLTBCURCLI
+
+                    MOVE WT-FECNAC       TO WS-CORTE-FECHA
+
+               WHEN SQLCODE EQUAL +100
+
+      ******* ULTIMO CORTE *****************
+                   PERFORM 3100-I-CORTE-FECNAC THRU 3100-F-CORTE-FECNAC
+                   SET WS-FIN-PROCESO TO TRUE
+
+               WHEN OTHER
+
+                   MOVE SQLCODE TO WS-SQLCODE
+                   DISPLAY 'ERROR FETCH CURSOR: ' WS-SQLCODE
+                   SET WS-FIN-PROCESO TO TRUE
+
+           END-EVALUATE
+           .
+       4100-F-LEER-CURSOR. EXIT.
+
+      **************************************
+      *           GRABAR-REGISTRO          *
+      **************************************
+
+       5100-I-GRABAR-REGISTRO.
+
+
+           MOVE WT-NROCLI          TO WS-SAL-NROCLI
+           MOVE WT-NOMAPE          TO WS-SAL-NOMAPE
+           MOVE WT-FECNAC          TO WS-SAL-FECNAC
+           MOVE WT-SEXO            TO WS-SAL-SEXO
+                DISPLAY WS-REG-SALIDA
+           WRITE REG-SALIDA       FROM WS-REG-SALIDA AFTER 1
+
+           EVALUATE FS-SALIDA
+               WHEN '00'
+                   ADD  1 TO WS-CANT-IMPRESOS
+                   ADD  1 TO WS-CANT-LINEA
+               WHEN OTHER
+                   DISPLAY '* ERROR EN GRABAR REGISTRO= ' FS-SALIDA
+                   MOVE 9999 TO RETURN-CODE
+                   SET WS-FIN-PROCESO TO TRUE
+           END-EVALUATE
+
+           .
+       5100-F-GRABAR-REGISTRO. EXIT.
+
+      **************************************
+      *           GRABAR-TITULO            *
+      **************************************
+
+       5200-I-GRABAR-TITULO.
+
+           MOVE WS-CANT-PAGINA TO WS-SAL-NROPAGINA
+
+           WRITE REG-SALIDA       FROM WS-TITULO AFTER PAGE
+
+           EVALUATE FS-SALIDA
+               WHEN '00'
+                   ADD  1 TO WS-CANT-IMPRESOS
+                   MOVE 1 TO WS-CANT-LINEA
+               WHEN OTHER
+                   DISPLAY '* ERROR EN GRABAR TITULO= ' FS-SALIDA
+                   MOVE 9999 TO RETURN-CODE
+                   SET WS-FIN-PROCESO TO TRUE
+           END-EVALUATE
+
+           .
+       5200-F-GRABAR-TITULO. EXIT.
+
+      **************************************
+      *           GRABAR-SUBTITULO         *
+      **************************************
+
+       5300-I-GRABAR-SUBTITULO.
+
+           IF WS-CANT-LINEA GREATER 10
+                ADD  1 TO WS-CANT-PAGINA
+                MOVE 0 TO WS-CANT-LINEA
+
+                PERFORM 5200-I-GRABAR-TITULO
+                   THRU 5200-F-GRABAR-TITULO
+           END-IF
+
+           WRITE REG-SALIDA       FROM WS-SUBTITULO AFTER 1
+
+           EVALUATE FS-SALIDA
+               WHEN '00'
+                   ADD  1 TO WS-CANT-IMPRESOS
+                   ADD  1 TO WS-CANT-LINEA
+               WHEN OTHER
+                   DISPLAY '* ERROR EN GRABAR TITULO= ' FS-SALIDA
+                   MOVE 9999 TO RETURN-CODE
+                   SET WS-FIN-PROCESO TO TRUE
+           END-EVALUATE
+
+           .
+       5300-F-GRABAR-SUBTITULO. EXIT.
+
+      **************************************
+      *           GRABAR-SEPARADOR         *
+      **************************************
+
+       5400-I-GRABAR-SEPARADOR.
+
+            WRITE REG-SALIDA       FROM WS-SEPARADOR AFTER 1
+
+            EVALUATE FS-SALIDA
+                WHEN '00'
+                    ADD  1 TO WS-CANT-IMPRESOS
+                    ADD  1 TO WS-CANT-LINEA
+                WHEN OTHER
+                    DISPLAY '* ERROR EN GRABAR SEPARADOR = ' FS-SALIDA
+                    MOVE 9999 TO RETURN-CODE
+                    SET WS-FIN-PROCESO TO TRUE
+            END-EVALUATE
+
+            .
+       5400-F-GRABAR-SEPARADOR. EXIT.
+
+      **************************************
+      *      GRABAR-CABECERA-CORTE-SEXO    *
+      **************************************
+
+       5500-I-GRAB-CAB-CORT-SEXO.
+
+           EVALUATE WS-SEXO-ANT
+               WHEN 'F'
+                   MOVE 'FEMENINO ' TO WS-SAL-MEN-SEXO
+               WHEN 'M'
+                   MOVE 'MASCULINO' TO WS-SAL-MEN-SEXO
+               WHEN 'O'
+                   MOVE 'OTROS    ' TO WS-SAL-MEN-SEXO
+           END-EVALUATE
+      *     DISPLAY WS-SAL-MEN-SEXO
+           WRITE REG-SALIDA     FROM WS-SUBTITULO-CORTE-SEXO AFTER 1
+
+           EVALUATE FS-SALIDA
+               WHEN '00'
+                   ADD  1 TO WS-CANT-IMPRESOS
+                   ADD  1 TO WS-CANT-LINEA
+               WHEN OTHER
+                   DISPLAY '* ERROR EN GRABAR CABECERA1 = ' FS-SALIDA
+                   MOVE 9999 TO RETURN-CODE
+                   SET WS-FIN-PROCESO TO TRUE
+           END-EVALUATE
+
+           .
+       5500-F-GRAB-CAB-CORT-SEXO. EXIT.
+
+      **************************************
+      *      GRABAR-CABECERA-CORTE-FECNAC  *
+      **************************************
+
+       5600-I-GRAB-CAB-CORT-FECNAC.
+
+           MOVE WS-FECNAC-ANT  TO WS-SAL-NRO-FECNAC
+
+           WRITE REG-SALIDA    FROM WS-SUBTITULO-CORTE-FECNAC AFTER 1
+
+           EVALUATE FS-SALIDA
+               WHEN '00'
+                   ADD  1 TO WS-CANT-IMPRESOS
+                   ADD  1 TO WS-CANT-LINEA
+               WHEN OTHER
+                   DISPLAY '* ERROR EN GRABAR CABECERA2 = ' FS-SALIDA
+                   MOVE 9999 TO RETURN-CODE
+                   SET WS-FIN-PROCESO TO TRUE
+           END-EVALUATE
+
+           .
+       5600-F-GRAB-CAB-CORT-FECNAC. EXIT.
+
+      **************************************
+      *                                    *
+      *  CUERPO FINAL CIERRE DE FILES      *
+      *                                    *
+      **************************************
+
+       9999-I-FINAL.
+
+           CLOSE SALIDA
+               IF FS-SALIDA   IS NOT EQUAL '00'
+                    DISPLAY '* ERROR EN CLOSE SALIDA  = ' FS-SALIDA
+                    MOVE 9999 TO RETURN-CODE
+               END-IF
+
+      ********** CIERRO CURSOR *************
+           EXEC SQL
+              CLOSE ITEM_CURSOR
+           END-EXEC.
+
+           IF SQLCODE NOT EQUAL ZEROS
+               MOVE SQLCODE TO WS-SQLCODE
+               DISPLAY '* ERROR CLOSE CURSOR      = ' WS-SQLCODE
+               MOVE 9999 TO RETURN-CODE
+           END-IF.
+
+      **************************************
+      *   MOSTRAR TOTALES DE CONTROL       *
+      **************************************
+
+      *    MOVE WS-CANT-TOTAL TO WS-CANT-TOTAL-EDIT
+
+           DISPLAY 'TOTAL LEIDOS:   ' WS-CANT-LEIDOS
+           DISPLAY 'TOTAL IMPRESOS: ' WS-CANT-IMPRESOS
+
+           .
+       9999-F-FINAL.
+           EXIT.
+      *
+

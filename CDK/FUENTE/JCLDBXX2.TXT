@@ -1,0 +1,37 @@
+//KC03J21J JOB CLASS=A,MSGCLASS=O,MSGLEVEL=(1,1),NOTIFY=&SYSUID,
+//             TIME=(,3) ,RESTART=STEP2
+//JOBLIB  DD  DSN=DSND10.SDSNLOAD,DISP=SHR                              00020002
+//***************************************************************
+//* EJECUTAR STEP1 SOLO LA PRIMERA VEZ PARA DEFINIR SALIDA      *
+//***************************************************************
+//*
+//STEP1    EXEC PGM=IDCAMS,COND=(8,LT)
+//SYSPRINT DD SYSOUT=*
+//SYSIN    DD *
+     DELETE   KC03J21.LISTADO.CLIENTES
+     SET MAXCC=0
+//*
+//STEP2    EXEC PGM=IEFBR14
+//DD1      DD DSN=KC03J21.LISTADO.CLIENTES,UNIT=SYSDA,
+//            DCB=(LRECL=153,BLKSIZE=0000,RECFM=FB),
+//            SPACE=(TRK,(1,1),RLSE),DISP=(,CATLG)
+//*
+//***************************************************************
+//*      EJECUTAR PROGRAMA COBOL CON SQL EMBEBIDO               *
+//***************************************************************
+//*
+//STEP3    EXEC PGM=IKJEFT01,DYNAMNBR=20,COND=(4,LT)                    00030002
+//SYSTSPRT DD SYSOUT=*                                                  00040002
+//DDSALE   DD DSN=KC03J21.LISTADO.CLIENTES,DISP=SHR
+//SYSOUT   DD SYSOUT=*
+//SYSTSIN  DD *                                                         00050002
+  DSN SYSTEM(DBDG)                                                      00060002
+  RUN  PROGRAM(PGMB2J21) PLAN(CURSOJ21) +                               00554000
+      LIB('KC03J21.CURSOS.PGMLIB')                                      00560000
+  END                                                                   00085007
+//SYSPRINT DD SYSOUT=*                                                  00090002
+//SYSUDUMP DD SYSOUT=*                                                  00100002
+//SYSIN    DD *                                                         00110002
+//*
+//
+

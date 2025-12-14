@@ -1,0 +1,41 @@
+       IDENTIFICATION DIVISION.
+      **************************************
+      *    AUTOR:      FABIO CICERELLI     *
+      *    COMISION:   F                   *
+      **************************************
+       PROGRAM-ID. PGMRVRS.
+       DATA DIVISION.
+      **************************************
+       WORKING-STORAGE SECTION.
+      **************************************
+      *     REVERSE
+       01 WS-VAR1        PIC X(19) VALUE 'MAINFRAME DEVELOPER'.
+       01 WS-OUT         PIC X(19).
+       01 WS-IDX1        PIC 9(02) VALUE 0.
+       01 WS-IDX2        PIC 9(02) VALUE 1.
+       01 WS-LEN         PIC 9(02) VALUE 0.
+      *     PARAMETROS
+       01 WS-DISPLAY-DATA       PIC X(150).
+       01 WS-LEN2               PIC S9(4) SIGN LEADING SEPARATE.
+       LINKAGE SECTION.
+       01 WS-PARAM-GRP.
+          05 WS-PARAM-LEN       PIC S9(4) COMP.
+          05 WS-PARAM-DATA      PIC X(100).
+      **************************************
+       PROCEDURE DIVISION USING WS-PARAM-GRP.
+      **************************************
+      *     REVERSE
+           MOVE LENGTH OF WS-VAR1 TO WS-LEN.
+           PERFORM VARYING WS-IDX1 FROM WS-LEN BY -1 UNTIL WS-IDX1 = 0
+               MOVE WS-VAR1(WS-IDX1:1) TO WS-OUT(WS-IDX2:1)
+               ADD 1 TO WS-IDX2
+           END-PERFORM.
+               DISPLAY 'STRING VALUE IS : ' WS-OUT.
+      *     PARAMETROS
+           COMPUTE WS-LEN2 = WS-PARAM-LEN + 0.
+           MOVE WS-PARAM-DATA TO WS-DISPLAY-DATA.
+           DISPLAY 'LENGTH OF DATA IS : ' WS-LEN2.
+           DISPLAY 'DATA IS : ' WS-DISPLAY-DATA.
+           GOBACK.
+
+

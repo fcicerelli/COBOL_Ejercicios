@@ -1,0 +1,15 @@
+//KC03J21E JOB CLASS=A,MSGCLASS=O,MSGLEVEL=(1,1),NOTIFY=&SYSUID,        00010000
+//             TIME=(,5)    ,RESTART=STEP2                              00011000
+//************************************
+//*        EJECUCION PROGRA HOLMUNDO *
+//*        XX= ULT 2 NúMEROS USER    *
+//************************************
+//STEP2    EXEC PGM=PGMESES2
+//STEPLIB  DD DSN=KC03J21.CURSOS.PGMLIB,DISP=SHR
+//*
+//SYSOUT   DD SYSOUT=*
+//SYSUDUMP DD SYSOUT=*
+//SYSIN    DD SYSOUT=*
+//*
+//
+

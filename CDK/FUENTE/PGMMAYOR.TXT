@@ -1,0 +1,37 @@
+       IDENTIFICATION DIVISION.
+      **************************************
+      *    AUTOR:      FABIO CICERELLI     *
+      *    COMISION:   F                   *
+      **************************************
+       PROGRAM-ID. PGMMAYOR.
+       DATA DIVISION.
+      **************************************
+       WORKING-STORAGE SECTION.
+      **************************************
+       77  FILLER        PIC X(26) VALUE '* INICIO WORKING-STORAGE *'.
+
+      * VARIABLE 1
+       77  WS-NUM1       PIC 9(4)  VALUE ZEROS.
+
+      * VARIABLE 2
+       77  WS-NUM2       PIC 9(4)  VALUE ZEROS.
+
+      * VARIABLE PARA MOSTRAR SUMATORIA FINAL
+       77  WS-DISPLAY    PIC 9(4)  VALUE ZEROS.
+       77  FILLER        PIC X(26) VALUE '* FINAL  WORKING-STORAGE *'.
+
+      **************************************
+       PROCEDURE DIVISION.
+      **************************************
+       INICIO.
+           MOVE 50 TO WS-NUM1.
+           MOVE 15 TO WS-NUM2.
+           IF WS-NUM1 > WS-NUM2
+                MOVE WS-NUM1 TO WS-DISPLAY
+           ELSE
+                MOVE WS-NUM2 TO WS-DISPLAY
+           END-IF.
+           DISPLAY 'EL NUMERO MAYOR ES: ' WS-DISPLAY.
+           GOBACK.
+
+

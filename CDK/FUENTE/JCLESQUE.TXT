@@ -1,0 +1,38 @@
+//KC03J21D JOB CLASS=A,MSGCLASS=O,MSGLEVEL=(1,1),NOTIFY=&SYSUID,        00010014
+//             TIME=(,5)                                                00011015
+//JOBLIB  DD  DSN=DSND10.SDSNLOAD,DISP=SHR                              00020001
+//        DD DSN=KC03J21.CURSOS.PGMLIB,DISP=SHR                         00021007
+//***************************************************************       00030000
+//* EJECUTAR STEP1 SOLO LA PRIMERA VEZ PARA DEFINIR SALIDA      *       00040002
+//***************************************************************       00050000
+//*                                                                     00060000
+//STEP1    EXEC PGM=IDCAMS,COND=(8,LT)                                  00061017
+//SYSPRINT DD SYSOUT=*                                                  00062017
+//SYSIN    DD *                                                         00063017
+     DELETE   KC03J21.CURSOS.DB2.SALIDA                                 00064017
+     SET MAXCC=0                                                        00065017
+//*                                                                     00070017
+//STEP2    EXEC PGM=IEFBR14                                             00090017
+//DD1      DD DSN=KC03J21.CURSOS.DB2.SALIDA,UNIT=SYSDA,                 00100017
+//            DCB=(LRECL=133,BLKSIZE=0000,RECFM=FB),                    00101018
+//            SPACE=(TRK,(1,1),RLSE),DISP=(,CATLG)                      00102017
+//*                                                                     00110000
+//***************************************************************       00120000
+//*      EJECUTAR PROGRAMA COBOL CON SQL EMBEBIDO               *       00130000
+//***************************************************************       00140000
+//*                                                                     00150000
+//STEP3    EXEC PGM=IKJEFT01,DYNAMNBR=20,COND=(4,LT)                    00160017
+//SYSTSPRT DD SYSOUT=*                                                  00170000
+//DDSALID  DD DSN=KC03J21.CURSOS.DB2.SALIDA,DISP=SHR                    00180019
+//SYSOUT   DD SYSOUT=*                                                  00190000
+//SYSTSIN  DD *                                                         00200000
+  DSN SYSTEM(DBDG)                                                      00210000
+  RUN  PROGRAM(ESQUAPAR) PLAN(CURSOJ21) +                               00220013
+      LIB('KC03J21.CURSOS.PGMLIB')                                      00230007
+  END                                                                   00240000
+//SYSPRINT DD SYSOUT=*                                                  00250000
+//SYSUDUMP DD SYSOUT=*                                                  00260000
+//SYSIN    DD *                                                         00270000
+//*                                                                     00280000
+//                                                                      00290000
+

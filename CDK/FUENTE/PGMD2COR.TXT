@@ -1,0 +1,217 @@
+       IDENTIFICATION DIVISION.                                         00010000
+       PROGRAM-ID PGMD2COR.                                             00020000
+      **********************************************************        00030000
+      *                                                        *        00040000
+      *  PROGRAMA PARA EMITIR TOTAL CTAS ACTIVAS POR SUCURSAL  *        00050000
+      *  ACTIVAS POR SUC Y  TOTAL CTAS ACTIVAS BCO             *        00060000
+      *  LA ENTRADA CLASIFICADA X SUCURSAL                     *        00070000
+      *                                                        *        00080000
+      *      ESQUELETO PGMDB22  PGMD2799 (OTRO)                *        00081005
+      *                             JCLDB2XX                   *        00082004
+      *                                                        *        00083004
+      **********************************************************        00090000
+      *      MANTENIMIENTO DE PROGRAMA                         *        00100000
+      **********************************************************        00110000
+      *  FECHA   *    DETALLE        * COD *                            00120000
+      **************************************                            00130000
+      *          *                   *     *                            00140000
+      *          *                   *     *                            00150000
+      **************************************                            00160000
+       ENVIRONMENT DIVISION.                                            00170000
+       CONFIGURATION SECTION.                                           00180000
+       SPECIAL-NAMES.                                                   00190000
+             DECIMAL-POINT IS COMMA.                                    00200000
+       INPUT-OUTPUT SECTION.                                            00210000
+       FILE-CONTROL.                                                    00220000
+       DATA DIVISION.                                                   00230000
+       FILE SECTION.                                                    00240000
+      **************************************                            00250000
+       WORKING-STORAGE SECTION.                                         00260000
+      **************************************                            00270000
+       77  FILLER        PIC X(26) VALUE '* INICIO WORKING-STORAGE *'.  00280000
+                                                                        00290000
+       01  WS-VARIABLES.                                                00300000
+           05  WS-SUC-ANT                 PIC S9(2)V.                   00310000
+           05  WS-SUC-DISP                PIC 9(2).                     00311005
+           05  WS-ACC-BALANCE             PIC S9(09)V99.                00320000
+           05  WS-ERR-PARRAFO             PIC X(30).                    00330000
+           05  WS-ERR-OPERACION           PIC X(30).                    00340000
+           05  WS-ERR-CODE                PIC X(30).                    00350000
+           05  WS-CONT-SUC                PIC 999.                      00360000
+           05  WS-CONT-LEIDOS             PIC 9(03).                    00370000
+           05  WS-CONT-GRABADOS           PIC 9(03).                    00380000
+           05  WS-SQLCODE                 PIC -ZZ9.                     00390000
+           05  WS-FLAG                    PIC S9(03).                   00400000
+               88  WS-FIN-PROCESO         VALUE +100.                   00410000
+       01  WS-CONSTANTES.                                               00420000
+           05  CONS-CERO                  PIC 9(01)   VALUE 0.          00430000
+           05  WS-CONS-LINEA              PIC X(50)   VALUE ALL '*'.    00440000
+      **************************************                            00450000
+                                                                        00460000
+      **************************************                            00470000
+      * LAY-OUT DE CORTE DE CONTROL                                     00480000
+      **************************************                            00490000
+       01  WS-REG-CORTE.                                                00500000
+           05  FILLER                  PIC X(01)   VALUE '*'.           00510000
+           05  FILLER                  PIC X(08)   VALUE 'SUCURSAL'.    00520000
+           05  FILLER                  PIC X(03)   VALUE ' : '.         00530000
+           05  WS-COR-SUCURSAL         PIC X(02)   VALUE SPACES.        00540000
+           05  FILLER                  PIC X(03)   VALUE '   '.         00550000
+           05  FILLER                  PIC X(07)   VALUE 'BALANCE'.     00560000
+           05  FILLER                  PIC X(03)   VALUE ' : '.         00570000
+           05  WS-COR-BALANCE          PIC -ZZZ.ZZZ.ZZ9,99              00580000
+                                                   VALUE ZEROS.         00590000
+           05  FILLER                  PIC X(07)   VALUE SPACES.        00600000
+           05  FILLER                  PIC X(01)   VALUE '*'.           00610000
+                                                                        00620000
+            EXEC SQL                                                    00630000
+              INCLUDE SQLCA                                             00640000
+            END-EXEC.                                                   00650000
+                                                                        00660000
+            EXEC SQL                                                    00670000
+              INCLUDE TBCURCTA                                          00680000
+            END-EXEC.                                                   00690000
+                                                                        00700000
+            EXEC SQL                                                    00710000
+              DECLARE ITEM_CURSOR CURSOR                                00720000
+              FOR                                                       00730000
+               SELECT TIPCUEN,                                          00740000
+                      NROCUEN,                                          00750000
+                       SUCUEN,                                          00760000
+                       NROCLI,                                          00770000
+                        SALDO,                                          00780000
+                       FECSAL                                           00790000
+                      FROM  KC02803.TBCURCTA                            00800000
+                      ORDER BY SUCUEN                                   00810000
+            END-EXEC.                                                   00820000
+                                                                        00821003
+       77  FILLER        PIC X(26) VALUE '* FINAL  WORKING-STORAGE *'.  00830000
+                                                                        00840000
+      ***************************************************************.  00850000
+       PROCEDURE DIVISION.                                              00860000
+      **************************************                            00870000
+      *                                    *                            00880000
+      *  CUERPO PRINCIPAL DEL PROGRAMA     *                            00890000
+      *                                    *                            00900000
+      **************************************                            00910000
+       MAIN-PROGRAM.                                                    00920000
+                                                                        00930000
+           PERFORM 1000-INICIO                                          00940000
+                                                                        00950000
+           PERFORM 2000-PROCESO                                         00960000
+                   UNTIL WS-FIN-PROCESO                                 00970000
+                                                                        00980000
+           PERFORM 9000-FINAL                                           00990000
+                                                                        01000000
+           GOBACK.                                                      01010000
+                                                                        01020000
+      **************************************                            01030000
+      *                                    *                            01040000
+      *               INICIO               *                            01050000
+      *                                    *                            01060000
+      **************************************                            01070000
+       1000-INICIO.                                                     01080000
+      *                                                                 01090000
+            INITIALIZE WS-VARIABLES                                     01100000
+                                                                        01110000
+            PERFORM  1100-OPEN-CURSOR                                   01120000
+                                                                        01130000
+            PERFORM  4100-LEER-CURSOR                                   01140000
+                                                                        01150000
+            MOVE     WS-SUCUEN        TO   WS-SUC-ANT                   01160002
+            IF WS-FIN-PROCESO                                           01170000
+              DISPLAY '* ARCHIVO ENTRADA VACÍO'                         01180000
+            END-IF                                                      01190000
+            .                                                           01200000
+       1000-INICIO-F. EXIT.                                             01210000
+                                                                        01220000
+       1100-OPEN-CURSOR.                                                01230000
+           EXEC SQL                                                     01240000
+              OPEN ITEM_CURSOR                                          01250000
+           END-EXEC.                                                    01260000
+                                                                        01270000
+           IF SQLCODE NOT EQUAL ZEROS                                   01280000
+              MOVE SQLCODE   TO WS-SQLCODE                              01290000
+              DISPLAY '* ERROR OPEN CURSOR      = ' WS-SQLCODE          01300000
+              MOVE 9999 TO RETURN-CODE                                  01310000
+              SET  WS-FIN-PROCESO TO TRUE                               01320000
+           END-IF                                                       01330001
+           .                                                            01340001
+                                                                        01350000
+                                                                        01360001
+      **************************************                            01370000
+      *                                    *                            01380000
+      *              PROCESO               *                            01390000
+      *                                    *                            01400000
+      **************************************                            01410000
+       2000-PROCESO.                                                    01420000
+      *                                                                 01430000
+           IF  WS-SUCUEN = WS-SUC-ANT                                   01440002
+               ADD 1 TO  WS-CONT-SUC                                    01450000
+      *        PERFORM   5100-GARBAR-REG                                01460000
+               PERFORM   4100-LEER-CURSOR                               01470000
+           ELSE                                                         01480000
+               PERFORM  2100-CORTE-SUC                                  01490000
+           END-IF                                                       01500000
+           .                                                            01510000
+                                                                        01520000
+       2100-CORTE-SUC.                                                  01530000
+      *                                                                 01540000
+           MOVE WS-SUC-ANT       TO WS-SUC-DISP                         01541005
+           DISPLAY ' SUCURSAL : ' WS-SUC-DISP                           01550005
+                   ' CANTIDAD : ' WS-CONT-SUC                           01560000
+           MOVE 0                TO  WS-CONT-SUC                        01570000
+           MOVE WS-SUCUEN        TO  WS-SUC-ANT                         01580002
+           .                                                            01590000
+       4100-LEER-CURSOR.                                                01600000
+           EXEC SQL                                                     01610000
+              FETCH  ITEM_CURSOR                                        01620000
+                     INTO                                               01630000
+                        :WS-TIPCUEN,                                    01640002
+                        :WS-NROCUEN,                                    01650002
+                        :WS-SUCUEN,                                     01660002
+                        :WS-NROCLI,                                     01670002
+                        :WS-SALDO,                                      01680002
+                        :WS-FECSAL                                      01690002
+           END-EXEC.                                                    01700000
+                                                                        01710000
+                                                                        01720000
+           EVALUATE TRUE                                                01730000
+             WHEN SQLCODE EQUAL ZEROS                                   01740000
+                  ADD 1   TO WS-CONT-LEIDOS                             01750000
+             WHEN SQLCODE EQUAL +100                                    01760000
+                PERFORM 2100-CORTE-SUC                                  01761005
+                SET WS-FIN-PROCESO TO TRUE                              01770000
+                                                                        01780000
+             WHEN OTHER                                                 01790000
+                MOVE SQLCODE TO WS-SQLCODE                              01800000
+                DISPLAY 'ERROR FETCH CURSOR: '   WS-SQLCODE             01810000
+                SET WS-FIN-PROCESO TO TRUE                              01820000
+           END-EVALUATE                                                 01830000
+           .                                                            01840000
+      **************************************                            01850000
+      *                                    *                            01860000
+      *  CUERPO FINAL CIERRE DE FILES      *                            01870000
+      *                                    *                            01880000
+      **************************************                            01890000
+       9000-FINAL.                                                      01900000
+      *                                                                 01910000
+           PERFORM 9100-CLOSE-CURSOR                                    01920000
+           PERFORM 9200-MOSTRAR-TOTALES                                 01930000
+           .                                                            01940000
+       9100-CLOSE-CURSOR.                                               01950000
+      *                                                                 01960000
+           EXEC SQL                                                     01970000
+              CLOSE ITEM_CURSOR                                         01980000
+           END-EXEC                                                     01990000
+                                                                        02000000
+           IF SQLCODE NOT EQUAL ZEROS                                   02010000
+              MOVE SQLCODE TO WS-SQLCODE                                02020000
+              DISPLAY '* ERROR CLOSE CURSOR      = ' WS-SQLCODE         02030000
+              MOVE 9999 TO RETURN-CODE                                  02040000
+           END-IF                                                       02050000
+           .                                                            02060000
+       9200-MOSTRAR-TOTALES.                                            02070000
+           DISPLAY 'TOTALES LEIDOS   : '  WS-CONT-LEIDOS                02080000
+           .                                                            02090000
+

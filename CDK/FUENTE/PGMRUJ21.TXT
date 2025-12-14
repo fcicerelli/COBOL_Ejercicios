@@ -1,0 +1,168 @@
+       IDENTIFICATION DIVISION.                                         00010000
+        PROGRAM-ID PGMRUJ21.                                            00011000
+      **************************************                            00012000
+      *                                    *                            00013000
+      *  RUTINA QUE DEVUELVE ˙LTIMO DIA DEL*                            00014000
+      *  MES                               *                            00015000
+      *  PROGRAMA LLAMADOR ENVIA:          *                            00015100
+      *  AÒO EN 4 CARACTERES NUMERICOS     *                            00015200
+      *  MES EN 2 CARACTERES NUMERICOS     *                            00015300
+      *                                    *                            00016000
+      *  RUTINA DEVUELVE:                  *                            00016100
+      *  AÒO EN 4 CARACTERES NUMERICOS     *                            00016200
+      *  MES EN 2 CARACTERES NUMERICOS     *                            00016300
+      *  DIA EN 2 CARACTERES NUMERICOS     *                            00016400
+      *  RETURN-CODE EXITOSO = ZEROS       *                            00016500
+      *  RETURN-CODE PARA FECHA INVAL.= 05 *                            00016600
+      *                                    *                            00016701
+      *       ESQUELETO  PGMRUT            *                            00016801
+      *                                    *                            00016901
+      *                                    *                            00017001
+      **************************************                            00017101
+      *      MANTENIMIENTO DE PROGRAMA     *                            00018000
+      **************************************                            00019000
+      *  FECHA   *    DETALLE        * COD *                            00019100
+      **************************************                            00019200
+      *          *                   *     *                            00019300
+      *          *                   *     *                            00019400
+      **************************************                            00019500
+       ENVIRONMENT DIVISION.                                            00020000
+       INPUT-OUTPUT SECTION.                                            00021000
+       FILE-CONTROL.                                                    00021100
+       DATA DIVISION.                                                   00030000
+       FILE SECTION.                                                    00031000
+                                                                        00039100
+       WORKING-STORAGE SECTION.                                         00040000
+      **************************************************************    00040100
+       77  FILLER        PIC X(26) VALUE '* INICIO WORKING-STORAGE *'.  00041000
+                                                                        00041100
+       77  WS-RUTINA     PIC X(45)             VALUE                    00041200
+                  "      *      PROGRAMA COBOL 2030            *".      00041300
+                                                                        00041400
+       01  WS-AREA.                                                     00050800
+           03  WS-AREA-ANIO   PIC 9999     VALUE ZEROS.                 00050900
+           03  WS-AREA-MES    PIC 99       VALUE ZEROS.                 00051000
+           03  WS-AREA-DIA    PIC 99       VALUE ZEROS.                 00051100
+           03  FILLER         PIC X(22)    VALUE SPACES.                00051200
+                                                                        00051300
+       01  WS-FECHA-RECIBIDA.                                           00051900
+           03  WS-RECI-ANIO   PIC 9999     VALUE ZEROS.                 00052000
+           03  WS-RECI-MES    PIC 99       VALUE ZEROS.                 00052100
+                                                                        00052200
+       77  WS-RESULTADO    PIC 9(4)    VALUE ZEROS.                     00052300
+       77  WS-REMAINDER    PIC 99      VALUE ZEROS.                     00052400
+                                                                        00052500
+       01  WS-MESES.                                                    00052600
+             05  FILLER    PIC 9(02)             VALUE 31.              00052700
+             05  FILLER    PIC 9(02)             VALUE 28.              00052800
+             05  FILLER    PIC 9(02)             VALUE 31.              00052900
+             05  FILLER    PIC 9(02)             VALUE 30.              00053000
+             05  FILLER    PIC 9(02)             VALUE 31.              00053100
+             05  FILLER    PIC 9(02)             VALUE 30.              00053200
+             05  FILLER    PIC 9(02)             VALUE 31.              00053300
+             05  FILLER    PIC 9(02)             VALUE 31.              00053400
+             05  FILLER    PIC 9(02)             VALUE 30.              00053500
+             05  FILLER    PIC 9(02)             VALUE 31.              00053600
+             05  FILLER    PIC 9(02)             VALUE 30.              00053700
+             05  FILLER    PIC 9(02)             VALUE 31.              00053800
+         01 FILLER          REDEFINES WS-MESES.                         00053900
+            03 WS-ITEM-TABLA              OCCURS 12 TIMES.              00054000
+               05  WS-ITEM-DIA   PIC 9(02).                             00054200
+                                                                        00054300
+       77  FILLER        PIC X(26) VALUE '* FINAL  WORKING-STORAGE *'.  00054400
+                                                                        00054500
+      **************************************************************    00054600
+       LINKAGE SECTION.                                                 00054700
+                                                                        00054800
+       01  LK-AREA.                                                     00054900
+           03 FILLER.                                                   00055000
+              05 LK-SIGLO    PIC 99.                                    00055100
+              05 LK-ANIO     PIC 99.                                    00055200
+           03 LK-MES      PIC 99.                                       00055300
+           03 LK-DIA      PIC 99.                                       00055400
+           03 FILLER      PIC X(22).                                    00055500
+                                                                        00055600
+      ***************************************************************.  00055700
+       PROCEDURE DIVISION USING LK-AREA.                                00055800
+                                                                        00055900
+      **************************************                            00056000
+      *                                    *                            00056100
+      *  CUERPO PRINCIPAL DEL PROGRAMA     *                            00056200
+      *                                    *                            00056300
+      **************************************                            00057000
+       MAIN-PROGRAM.                                                    00060000
+                                                                        00060100
+           PERFORM 1000-INICIO  THRU   F-1000-INICIO.                   00060200
+                                                                        00060300
+           IF RETURN-CODE = ZEROS                                       00060400
+              PERFORM 2000-PROCESO  THRU  F-2000-PROCESO                00060500
+           END-IF.                                                      00060600
+                                                                        00060700
+           PERFORM 9999-FINAL    THRU  F-9999-FINAL.                    00060900
+                                                                        00061000
+       F-MAIN-PROGRAM. GOBACK.                                          00061100
+                                                                        00061200
+      **************************************                            00061300
+      *                                    *                            00061400
+      *  CUERPO INICIO INDICES             *                            00061500
+      *                                    *                            00061600
+      **************************************                            00061700
+       1000-INICIO.                                                     00062000
+           MOVE ZEROS      TO RETURN-CODE.                              00062100
+           MOVE LK-AREA       TO WS-AREA.                               00062200
+           MOVE WS-AREA-MES   TO WS-RECI-MES.                           00062300
+           MOVE WS-AREA-ANIO  TO WS-RECI-ANIO.                          00062400
+           PERFORM 1100-VALIDAR-AREA  THRU F-1100-VALIDAR-AREA.         00062500
+                                                                        00072000
+       F-1000-INICIO.                                                   00086000
+           EXIT.                                                        00086100
+                                                                        00086200
+      **************************************                            00086300
+       1100-VALIDAR-AREA.                                               00086400
+      **************************************                            00086500
+           IF WS-AREA-MES  = ZEROS OR                                   00086600
+              WS-AREA-MES > 12     OR                                   00086700
+              WS-AREA-ANIO = ZEROS                                      00086800
+                  MOVE 05  TO RETURN-CODE                               00086900
+           END-IF.                                                      00087000
+                                                                        00087800
+       F-1100-VALIDAR-AREA.                                             00088000
+           EXIT.                                                        00088100
+      **************************************                            00088200
+      *                                    *                            00088300
+      *  CUERPO PRINCIPAL DE PROCESO       *                            00089000
+      *                                    *                            00089600
+      **************************************                            00089700
+       2000-PROCESO.                                                    00090000
+                                                                        00091000
+           IF WS-AREA-MES = 02                                          00100500
+      * CALCULO A—O BISIESTO               *                            00100600
+              DIVIDE WS-AREA-ANIO BY 4 GIVING WS-RESULTADO              00100700
+                  REMAINDER    WS-REMAINDER                             00100800
+              IF WS-REMAINDER = ZEROS                                   00100900
+                 MOVE 29    TO WS-ITEM-DIA (2)                          00101000
+              END-IF                                                    00101100
+           END-IF.                                                      00101200
+                                                                        00101300
+                                                                        00101400
+           MOVE WS-ITEM-DIA (WS-AREA-MES)   TO WS-AREA-DIA.             00101500
+                                                                        00101600
+       F-2000-PROCESO. EXIT.                                            00102000
+                                                                        00102100
+      **************************************                            00165000
+      *                                    *                            00166000
+      *  CUERPO FINAL MUESTRA RESULTADO    *                            00167000
+      *                                    *                            00168000
+      **************************************                            00169000
+       9999-FINAL.                                                      00170000
+                                                                        00173000
+           MOVE WS-AREA          TO LK-AREA.                            00174000
+           DISPLAY "***PGMRUT - CÛDIGO DE RETORNO ES   ****** "         00180000
+                                     RETURN-CODE                        00180100
+           DISPLAY "   FECHA RECIBIDA: "  WS-FECHA-RECIBIDA.            00180200
+           DISPLAY "   FECHA ENVIADA : "  WS-AREA.                      00180300
+                                                                        00181000
+       F-9999-FINAL.  EXIT.                                             00190000
+                                                                        00191000
+      *                                                                 00200000
+

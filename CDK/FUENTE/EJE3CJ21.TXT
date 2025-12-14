@@ -1,0 +1,13 @@
+//KC03J21Z JOB CLASS=A,MSGCLASS=O,MSGLEVEL=(1,1),NOTIFY=&SYSUID,
+//             TIME=(,5)
+//************************************
+//* EJECUCION PROGRAMA PGMASIN6      *
+//************************************
+//STEP1    EXEC PGM=PGM3CJ21
+//STEPLIB  DD DSN=KC03J21.CURSOS.PGMLIB,DISP=SHR
+//DDCLI    DD DSN=KC03J21.ARCHIVOS.CLIENTE,DISP=SHR
+//SYSOUT   DD SYSOUT=*
+//SYSUDUMP DD SYSOUT=*
+//*
+//
+

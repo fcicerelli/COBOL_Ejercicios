@@ -1,0 +1,22 @@
+//KC03J21D JOB CLASS=A,MSGCLASS=O,MSGLEVEL=(1,1),NOTIFY=&SYSUID         00010007
+//JOBLIB  DD  DSN=DSND10.SDSNLOAD,DISP=SHR                              00020001
+//        DD DSN=KC03J21.CURSOS.PGMLIB,DISP=SHR                         00021007
+//*                                                                     00110000
+//***************************************************************       00120000
+//*      EJECUTAR PROGRAMA COBOL CON SQL EMBEBIDO               *       00130000
+//***************************************************************       00140000
+//*                                                                     00150000
+//STEP2    EXEC PGM=IKJEFT01,DYNAMNBR=20,COND=(4,LT)                    00160000
+//SYSTSPRT DD SYSOUT=*                                                  00170000
+//SYSOUT   DD SYSOUT=*                                                  00190000
+//SYSTSIN  DD *                                                         00200000
+  DSN SYSTEM(DBDG)                                                      00210000
+  RUN  PROGRAM(PGMB5J21) PLAN(CURSOJ21) +                               00220016
+      LIB('KC03J21.CURSOS.PGMLIB')                                      00230007
+  END                                                                   00240000
+//SYSPRINT DD SYSOUT=*                                                  00250000
+//SYSUDUMP DD SYSOUT=*                                                  00260000
+//SYSIN    DD *                                                         00270000
+//*                                                                     00280000
+//                                                                      00290000
+

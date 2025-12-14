@@ -1,0 +1,237 @@
+       IDENTIFICATION DIVISION.                                         00010019
+      *                                                        *        00020019
+        PROGRAM-ID PGMVAJ21.                                            00030020
+      **********************************************************        00040019
+      *                                                        *        00050019
+      *  OBJETIVO: PR·CTICA CODIFICACIÛN COBOL                 *        00060019
+      *                                                        *        00070019
+      *                                                        *        00080019
+      **********************************************************        00090019
+       ENVIRONMENT DIVISION.                                            00100019
+       INPUT-OUTPUT SECTION.                                            00110019
+       FILE-CONTROL.                                                    00120019
+             SELECT E1NOVCLI  ASSIGN DDNOVCLI                           00130025
+                    FILE STATUS IS FS-E1NOVCLI.                         00140025
+                                                                        00150019
+             SELECT S1NCLIV   ASSIGN DDNCLIV                            00160025
+                    FILE STATUS IS FS-S1NCLIV.                          00170025
+                                                                        00210019
+       DATA DIVISION.                                                   00220019
+       FILE SECTION.                                                    00230019
+       FD E1NOVCLI                                                      00240025
+            BLOCK CONTAINS 0 RECORDS                                    00250019
+            RECORDING MODE IS F.                                        00260019
+                                                                        00270019
+       01 REG-E1NOVCLI   PIC X(50).                                     00280025
+                                                                        00290019
+       FD S1NCLIV                                                       00300025
+            BLOCK CONTAINS 0 RECORDS                                    00310019
+            RECORDING MODE IS F.                                        00320019
+                                                                        00330019
+       01 REG-S1NCLIV    PIC X(55).                                     00340026
+                                                                        00410019
+      **************************************                            00420019
+       WORKING-STORAGE SECTION.                                         00430019
+      **************************************                            00440019
+       77  FILLER        PIC X(26) VALUE '* INICIO WORKING-STORAGE *'.  00450019
+                                                                        00460019
+      **************************************                            00470019
+      * FILE STATUS                                                     00480019
+      **************************************                            00490019
+                                                                        00500019
+       77  FS-E1NOVCLI     PIC XX    VALUE SPACES.                      00510025
+           88  FS-E1NOVCLI-FIN       VALUE '10'.                        00520025
+                                                                        00530019
+       77  FS-S1NCLIV      PIC XX    VALUE SPACES.                      00540025
+           88  FS-S1NCLIV-FIN         VALUE '10'.                       00550025
+                                                                        00560019
+      **************************************                            00600019
+      * CONTADOR DE TOTALES                                             00610019
+       77  WS-CANT-LEIDOS          PIC 9(5)      VALUE ZEROS.           00620027
+       77  WS-CANT-ERROR           PIC 9(5)      VALUE ZEROS.           00630027
+                                                                        00650019
+      * CONTADOR DE REGISTROS QUE CUMPLEN LA CONDICION                  00660019
+       77  WS-CANT-CONDICION       PIC 9(5)      VALUE 1.               00670033
+                                                                        00690019
+      **************************************                            00691033
+      * VARIABLES CON M·SCARA                                           00692033
+       77  WS-CANT-LEIDOS-M        PIC ZZZZ9     VALUE ZEROS.           00693033
+       77  WS-NOV-SECUEN-M         PIC ZZZZ9     VALUE ZEROS.           00693133
+       77  WS-CANT-ERROR-M         PIC ZZZZ9     VALUE ZEROS.           00694033
+                                                                        00695033
+      **************************************                            00700019
+      * COPY PARA ESTRUCTURA DE DATOS                                   00710019
+      **************************************                            00720019
+                                                                        00730019
+       COPY CPNOVCLI.                                                   00740021
+       COPY CPNCLIV.                                                    00741021
+                                                                        00750019
+       01  FILLER        PIC X(26) VALUE '* FINAL  WORKING-STORAGE *'.  00760019
+                                                                        00770019
+      ***************************************************************.  00780019
+       PROCEDURE DIVISION.                                              00790019
+      **************************************                            00800019
+      *                                    *                            00810019
+      *  CUERPO PRINCIPAL DEL PROGRAMA     *                            00820019
+      *                                    *                            00830019
+      **************************************                            00840019
+       MAIN-PROGRAM.                                                    00850019
+                                                                        00860019
+           PERFORM 1000-INICIO   THRU    1000-INICIO-F                  00870019
+                                                                        00880019
+           PERFORM 2000-PROCESO  THRU    2000-PROCESO-F                 00890019
+                   UNTIL FS-E1NOVCLI-FIN                                00900025
+                                                                        00910019
+           PERFORM 3000-FINAL    THRU    3000-FINAL-F                   00920019
+           .                                                            00930019
+       F-MAIN-PROGRAM. GOBACK.                                          00940019
+                                                                        00950019
+      **************************************                            00960019
+      *                                    *                            00970019
+      *  CUERPO INICIO APERTURA ARCHIVOS   *                            00980019
+      *                                    *                            00990019
+      **************************************                            01000019
+       1000-INICIO.                                                     01010019
+                                                                        01020019
+      *                                                                 01030019
+           OPEN INPUT  E1NOVCLI                                         01040025
+                                                                        01050019
+           IF FS-E1NOVCLI IS NOT EQUAL '00'                             01060025
+              DISPLAY '* ERROR EN OPEN CLIENTE= '  FS-E1NOVCLI          01070025
+              MOVE 9999 TO RETURN-CODE                                  01080019
+              SET  FS-E1NOVCLI-FIN TO TRUE                              01090025
+           ELSE                                                         01100019
+              PERFORM 2100-LEER          THRU 2100-LEER-F               01110019
+           END-IF                                                       01120019
+      *                                                                 01130019
+           OPEN OUTPUT S1NCLIV                                          01140025
+                                                                        01150019
+           IF FS-S1NCLIV IS NOT EQUAL '00'                              01160025
+              DISPLAY '* ERROR EN OPEN SALIDA = '  FS-S1NCLIV           01170025
+              MOVE 9999 TO RETURN-CODE                                  01180019
+              SET  FS-E1NOVCLI-FIN TO TRUE                              01190025
+           END-IF                                                       01200019
+           .                                                            01290019
+       1000-INICIO-F. EXIT.                                             01300019
+                                                                        01310019
+      **************************************                            01320019
+      *                                    *                            01330019
+      *  CUERPO PRINCIPAL DE PROCESOS      *                            01340019
+      *                                    *                            01350019
+      **************************************                            01360019
+       2000-PROCESO.                                                    01370019
+      *                                                                 01380019
+           IF NOV-TIP-DOC  EQUAL 'DU' OR                                01390027
+              NOV-TIP-DOC  EQUAL 'PA' OR                                01391028
+              NOV-TIP-DOC  EQUAL 'PE' OR                                01392028
+              NOV-TIP-DOC  EQUAL 'CI'                                   01393028
+                PERFORM 2200-GRABAR-NCLIV THRU 2200-GRABAR-NCLIV-F      01400028
+           ELSE                                                         01410027
+                PERFORM 2300-DISPLAY-ERR THRU 2300-DISPLAY-ERR-F        01420028
+           END-IF                                                       01430027
+                                                                        01440019
+           PERFORM 2100-LEER           THRU 2100-LEER-F                 01450019
+           .                                                            01460019
+       2000-PROCESO-F. EXIT.                                            01470019
+                                                                        01480019
+      **************************************                            01490019
+      *  LEER REGISTROS                    *                            01500019
+      **************************************                            01510019
+       2100-LEER.                                                       01520019
+           READ E1NOVCLI          INTO WS-REG-NOVCLIE                   01530027
+                                                                        01540027
+           EVALUATE FS-E1NOVCLI                                         01550027
+             WHEN '00'                                                  01560027
+                            ADD 1 TO WS-CANT-LEIDOS                     01570027
+              WHEN '10'                                                 01580027
+                CONTINUE                                                01590027
+                                                                        01600019
+              WHEN OTHER                                                01610027
+              DISPLAY '* ERROR EN LECTURA CLIENTE= ' FS-E1NOVCLI        01620027
+              MOVE 9999 TO RETURN-CODE                                  01630027
+              SET FS-E1NOVCLI-FIN  TO TRUE                              01640027
+                                                                        01650027
+           END-EVALUATE                                                 01660027
+           .                                                            01670019
+       2100-LEER-F. EXIT.                                               01680019
+                                                                        01690019
+      **************************************                            01700019
+      *  GRABAR VALIDOS  DU - PA - PE - CI *                            01710025
+      **************************************                            01720019
+       2200-GRABAR-NCLIV.                                               01730029
+           MOVE WS-CANT-CONDICION TO NOV-SECUEN                         01731031
+           MOVE WS-REG-NOVCLIE    TO NOV-RESTO                          01732031
+           WRITE REG-S1NCLIV  FROM REG-NOVCLIE-VAL                      01740028
+           EVALUATE FS-S1NCLIV                                          01760027
+             WHEN '00'                                                  01770027
+                            ADD 1 TO WS-CANT-CONDICION                  01780031
+              WHEN '10'                                                 01790027
+                CONTINUE                                                01800027
+                                                                        01810019
+           WHEN OTHER                                                   01820027
+              DISPLAY '* ERROR EN GRABAR VALIDOS = ' FS-S1NCLIV         01830027
+              MOVE 9999 TO RETURN-CODE                                  01840027
+              SET FS-E1NOVCLI-FIN  TO TRUE                              01850027
+                                                                        01860027
+           END-EVALUATE                                                 01870027
+           .                                                            01880019
+       2200-GRABAR-NCLIV-F. EXIT.                                       01890025
+                                                                        02110019
+      **************************************                            02111027
+      *  MOSTRAR ERRORES                   *                            02112027
+      **************************************                            02113027
+                                                                        02114027
+       2300-DISPLAY-ERR.                                                02115029
+           ADD 1 TO WS-CANT-ERROR                                       02116027
+           DISPLAY NOV-TIP-DOC '-' NOV-NRO-DOC                          02116132
+                   ': TIPO DOCUMENTO INV¡LIDO'                          02116232
+           .                                                            02116327
+       2300-DISPLAY-ERR-F. EXIT.                                        02117027
+                                                                        02118027
+      **************************************                            02120019
+      *                                    *                            02130019
+      *  CUERPO FINAL                      *                            02140019
+      *                                    *                            02150019
+      **************************************                            02160019
+       3000-FINAL.                                                      02170019
+           IF RETURN-CODE NOT EQUAL 9999                                02180019
+            PERFORM  3010-CLOSE-FILES      THRU  3010-CLOSE-FILES-F     02190019
+            PERFORM  3020-MOSTRAR-TOTALES  THRU  3020-MOSTRAR-TOTALES-F 02200019
+           END-IF                                                       02210019
+           .                                                            02220019
+       3000-FINAL-F. EXIT.                                              02230019
+      **************************************                            02240019
+      *   CERRAR ARCHIVOS                  *                            02250019
+      **************************************                            02260019
+       3010-CLOSE-FILES.                                                02270019
+           CLOSE E1NOVCLI                                               02280025
+              IF FS-E1NOVCLI   IS NOT EQUAL '00'                        02290025
+                DISPLAY '* ERROR EN CLOSE CLIENTE= '                    02300025
+                                            FS-E1NOVCLI                 02310025
+                MOVE 9999 TO RETURN-CODE                                02320019
+             END-IF                                                     02330019
+                                                                        02340019
+           CLOSE S1NCLIV                                                02350025
+              IF FS-S1NCLIV    IS NOT EQUAL '00'                        02360025
+                DISPLAY '* ERROR EN CLOSE VALIDOS= '                    02370025
+                                            FS-S1NCLIV                  02380025
+                MOVE 9999 TO RETURN-CODE                                02390019
+             END-IF                                                     02400019
+           .                                                            02480019
+       3010-CLOSE-FILES-F. EXIT.                                        02490019
+                                                                        02500019
+      **************************************                            02510019
+      *  MOSTRAR TOTALES                   *                            02520019
+      **************************************                            02530019
+       3020-MOSTRAR-TOTALES.                                            02540019
+           MOVE   WS-CANT-LEIDOS   TO  WS-CANT-LEIDOS-M                 02541033
+           MOVE   NOV-SECUEN       TO  WS-NOV-SECUEN-M                  02542033
+           MOVE   WS-CANT-ERROR    TO  WS-CANT-ERROR-M                  02543033
+           DISPLAY '***************************************'            02544037
+           DISPLAY ' CANTIDAD DE REGISTROS LEÕDOS    ' WS-CANT-LEIDOS-M 02550033
+           DISPLAY ' CANTIDAD DE REGISTROS GRABADOS  ' WS-NOV-SECUEN-M  02560033
+           DISPLAY ' CANTIDAD DE REGISTROS ERR”NEOS  ' WS-CANT-ERROR-M  02570033
+           .                                                            02580033
+       3020-MOSTRAR-TOTALES-F. EXIT.                                    02590033
+                                                                        02600033
+

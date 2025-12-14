@@ -1,0 +1,195 @@
+       IDENTIFICATION DIVISION.                                         00010000
+      *                                                        *        00010100
+        PROGRAM-ID PGM3CJ21.                                            00010211
+      **********************************************************        00010300
+      *                                                        *        00010400
+      *  ABRIL 2025  PROGRAMA CON DECLARACION DE ARCHIVOS      *        00010500
+      *                                                        *        00010700
+      **********************************************************        00010800
+      *      MANTENIMIENTO DE PROGRAMA                         *        00010900
+      **********************************************************        00011000
+      *  FECHA   *    DETALLE        * COD *                            00012000
+      **************************************                            00013000
+      *          *                   *     *                            00014000
+      *          *                   *     *                            00015000
+      *          *                   *     *                            00016000
+      *          *                   *     *                            00017000
+      *          *                   *     *                            00018000
+      **************************************                            00019000
+       ENVIRONMENT DIVISION.                                            00020000
+       CONFIGURATION SECTION.                                           00020130
+       SPECIAL-NAMES.                                                   00020230
+            DECIMAL-POINT IS COMMA.                                     00020330
+       INPUT-OUTPUT SECTION.                                            00020400
+       FILE-CONTROL.                                                    00020500
+             SELECT CLIENTE  ASSIGN DDCLI                               00020611
+                    FILE STATUS IS WS-FILE-CLI.                         00020711
+                                                                        00020800
+       DATA DIVISION.                                                   00020900
+       FILE SECTION.                                                    00021000
+       FD CLIENTE                                                       00021111
+            BLOCK CONTAINS 0 RECORDS                                    00021200
+            RECORDING MODE IS F.                                        00021300
+                                                                        00022000
+       01 REG-CLIEN      PIC X(50).                                     00023011
+                                                                        00024000
+                                                                        00025000
+      **************************************                            00026000
+       WORKING-STORAGE SECTION.                                         00027000
+      **************************************                            00028000
+       77  FILLER        PIC X(26) VALUE '* INICIO WORKING-STORAGE *'.  00029000
+                                                                        00030000
+       77  FILLER        PIC X(26) VALUE '* CODIGOS RETORNO FILES  *'.  00040000
+       77  WS-FILE-CLI      PIC XX    VALUE SPACES.                     00041011
+      **************************************                            00042000
+                                                                        00043000
+       77  WS-STATUS-CLI    PIC X.                                      00044012
+           88  WS-FIN-CLI             VALUE 'Y'.                        00045012
+           88  WS-NO-FIN-CLI          VALUE 'N'.                        00046012
+                                                                        00047000
+      **************************************                            00048000
+      *         LAYOUT CLIENTE             *                            00049011
+      **************************************                            00050000
+           COPY CPCLI.                                                  00110811
+                                                                        00110900
+      * CONTADOR DE LEIDOS                                              00111000
+       77  WS-CANT-LEIDOS          PIC 9(3)      VALUE ZEROS.           00111100
+       77  SUM-SALDO               PIC S9(09)V99 VALUE ZEROS.           00111230
+       77  WS-CONT-DU              PIC 9(3)      VALUE ZEROS.           00111330
+       77  SUM-SALDO-MASC          PIC $ZZZZZZZZ9,99.                   00111430
+       77  WS-CONTADOR-TIPO        PIC 9(2)      VALUE ZEROS.           00111519
+       77  WS-SALDO-ACUM           PIC 9(10)V99 VALUE ZEROS.            00111624
+       77  WS-CLI-EDIT             PIC Z(3)      VALUE ZEROS.           00111727
+      * SUMADOR DE SALDOS                                               00111817
+       77  WS-SUMADOR-SALDOS       PIC S9(09)V99 COMP-3 VALUE ZEROS.    00111926
+       77  FILLER        PIC X(26) VALUE '* FINAL  WORKING-STORAGE *'.  00112101
+      * VARIABLES CONSULTA REGISTROS                                    00112217
+       77 WS-CLI-TIP-DOC           PIC X(2)      VALUE SPACES.          00112320
+       77 WS-CLI-SALDO             PIC S9(10)V99 COMP-3 VALUE ZEROS.    00112420
+      ***************************************************************.  00113000
+       PROCEDURE DIVISION.                                              00114000
+      **************************************                            00115000
+      *                                    *                            00116000
+      *  CUERPO PRINCIPAL DEL PROGRAMA     *                            00117000
+      *                                    *                            00118000
+      **************************************                            00119000
+       MAIN-PROGRAM.                                                    00120000
+                                                                        00130000
+           PERFORM 1000-INICIO  THRU   F-1000-INICIO.                   00140000
+                                                                        00150000
+           PERFORM 2000-PROCESO  THRU  F-2000-PROCESO                   00160000
+                   UNTIL WS-FIN-CLI.                                    00170012
+                                                                        00180000
+           PERFORM 9999-FINAL    THRU  F-9999-FINAL.                    00190000
+                                                                        00200000
+       F-MAIN-PROGRAM. GOBACK.                                          00210000
+                                                                        00220000
+      **************************************                            00230000
+      *                                    *                            00240000
+      *  CUERPO INICIO APERTURA ARCHIVOS   *                            00250000
+      *                                    *                            00260000
+      **************************************                            00270000
+       1000-INICIO.                                                     00280000
+           SET WS-NO-FIN-CLI TO TRUE.                                   00290012
+                                                                        00300000
+           OPEN INPUT  CLIENTE.                                         00310011
+                                                                        00320000
+                                                                        00330000
+           IF WS-FILE-CLI IS NOT EQUAL '00'                             00340012
+              DISPLAY '* ERROR EN OPEN CLIENTE = ' WS-FILE-CLI          00350012
+              MOVE 9999 TO RETURN-CODE                                  00360000
+              SET  WS-FIN-CLI     TO TRUE                               00370012
+           END-IF.                                                      00380000
+                                                                        00390000
+           PERFORM 2500-LEER     THRU F-2500-LEER.                      00400000
+      *    MOVE WS-CLI-TIPO    TO    WS-CLI-TIPO-ANT.                   00410028
+                                                                        00420000
+       F-1000-INICIO.   EXIT.                                           00430000
+                                                                        00440000
+      **************************************                            00450000
+      *                                    *                            00460000
+      *  CUERPO PRINCIPAL DE PROCESOS      *                            00470000
+      *                                    *                            00480000
+      **************************************                            00490000
+       2000-PROCESO.                                                    00500000
+      *                                                                 00510000
+           IF CLI-TIP-DOC  =  'DU'                                      00520029
+              ADD CLI-SALDO   TO SUM-SALDO                              00530029
+              ADD 1           TO WS-CONT-DU                             00531029
+              DISPLAY WS-CONT-DU ') ' CLI-TIP-DOC '-' CLI-NRO-DOC       00532029
+                      ' $'  CLI-SALDO                                   00533029
+           END-IF                                                       00540029
+                                                                        00600000
+           PERFORM 2500-LEER     THRU F-2500-LEER.                      00610000
+      *    IF      WS-CLI-TIP-DOC  EQUAL  'DU'                          00611028
+      *        ADD WS-CLI-SALDO   TO WS-SALDO-ACUM                      00612028
+      *    ELSE                                                         00613028
+      *        PERFORM 2500-LEER  THRU  F-2500-LEER                     00614028
+      *    END-IF.                                                      00615028
+                                                                        00620000
+       F-2000-PROCESO. EXIT.                                            00630000
+                                                                        00640000
+      **************************************                            00650000
+      *  LEER REGISTROS                    *                            00660000
+      **************************************                            00670000
+       2500-LEER.                                                       00680000
+           READ CLIENTE   INTO REG-CLIENTE                              00690011
+                                                                        00700000
+           EVALUATE WS-FILE-CLI                                         00710012
+             WHEN '00'                                                  00720000
+                           ADD 1 TO WS-CANT-LEIDOS                      00730000
+      *                    MOVE CLI-SALDO      TO    WS-SUMADOR-SALDOS  00731028
+      *                    MOVE CLI-TIP-DOC  TO   WS-CLI-TIP-DOC        00732028
+      *                    MOVE CLI-SALDO    TO   WS-CLI-SALDO          00733028
+              WHEN '10'                                                 00740000
+              SET WS-FIN-CLI  TO TRUE                                   00750012
+      *       PERFORM  3000-MOSTRAR-TOTAL THRU                          00751028
+      *              F-3000-MOSTRAR-TOTAL                               00752028
+                                                                        00760000
+           WHEN OTHER                                                   00770000
+              DISPLAY '* ERROR EN LECTURA CLIENTE  = ' WS-FILE-CLI      00780012
+              MOVE 9999 TO RETURN-CODE                                  00790000
+              SET WS-FIN-CLI  TO TRUE                                   00800012
+                                                                        00810000
+           END-EVALUATE.                                                00820000
+                                                                        00830000
+       F-2500-LEER. EXIT.                                               00840000
+                                                                        00850000
+       3000-MOSTRAR-TOTAL.                                              00860000
+      *    MOVE WS-CONTADOR-TIPO TO WS-CLI-EDIT.                        00861030
+           MOVE  SUM-SALDO     TO        SUM-SALDO-MASC                 00862030
+           DISPLAY ' TOTAL LEIDOSU       : '  WS-CANT-LEIDOS            00870030
+           DISPLAY ' TOTAL TIPO DU       : '  WS-CONT-DU                00880030
+           DISPLAY ' TOTAL SALDO DU      : '  SUM-SALDO-MASC            00881030
+      *    DISPLAY WS-CONTADOR-TIPO ' - ' WS-SUMADOR-SALDOS.            00890028
+                                                                        00891017
+      *    DISPLAY ' TOTAL SALDO CLIENTE: '  WS-CLI-SALDO.              00892028
+           .                                                            00893030
+       F-3000-MOSTRAR-TOTAL. EXIT.                                      00900015
+                                                                        00910000
+                                                                        00920000
+      **************************************                            00930000
+      *                                    *                            00940000
+      *  CUERPO FINAL CIERRE DE FILES      *                            00950000
+      *                                    *                            00960000
+      **************************************                            00970000
+       9999-FINAL.                                                      00980000
+                                                                        00990000
+           IF RETURN-CODE = 9999                                        00991008
+            CONTINUE                                                    00992008
+           ELSE                                                         00993008
+             CLOSE CLIENTE                                              01000011
+                IF WS-FILE-CLI IS NOT EQUAL '00'                        01010012
+                  DISPLAY '* ERROR EN CLOSE CLIENTE  = '                01020011
+                                            WS-FILE-CLI                 01030012
+                  MOVE 9999 TO RETURN-CODE                              01040008
+                  SET WS-FIN-CLI     TO TRUE                            01050012
+               END-IF                                                   01060008
+           END-IF.                                                      01151008
+                                                                        01160000
+           PERFORM  3000-MOSTRAR-TOTAL THRU F-3000-MOSTRAR-TOTAL        01170030
+           .                                                            01190030
+       F-9999-FINAL.                                                    01210000
+           EXIT.                                                        01220000
+      *                                                                 01230000
+

@@ -1,0 +1,434 @@
+       IDENTIFICATION DIVISION.                                         00010000
+      *                                                        *        00010100
+        PROGRAM-ID PGMCCJ21.                                            00010201
+      *                                                        *        00010300
+       ENVIRONMENT DIVISION.                                            00019100
+      *                                                        *        00019200
+       CONFIGURATION SECTION.                                           00019300
+                                                                        00019400
+       SPECIAL-NAMES.                                                   00019500
+           DECIMAL-POINT IS COMMA.                                      00019600
+                                                                        00019700
+       INPUT-OUTPUT SECTION.                                            00019800
+       FILE-CONTROL.                                                    00020200
+             SELECT CLIENTE  ASSIGN DDCLIEN                             00020301
+                    FILE STATUS IS WS-FILE-CLI.                         00020401
+                                                                        00020500
+             SELECT FILESAL   ASSIGN DDCORTE
+                    FILE STATUS IS WS-FILESAL-CODE.
+
+       DATA DIVISION.                                                   00020600
+       FILE SECTION.                                                    00020700
+       FD CLIENTE                                                       00020801
+            BLOCK CONTAINS 0 RECORDS                                    00020900
+            RECORDING MODE IS F.                                        00021000
+                                                                        00022000
+       01 WS-DATOS   PIC X(142).                                        00023001
+                                                                        00025000
+       FD FILESAL
+            BLOCK CONTAINS 0 RECORDS
+            RECORDING MODE IS F.
+
+       01 REG-FILESAL    PIC X(132).
+
+      **************************************                            00026000
+       WORKING-STORAGE SECTION.                                         00027000
+      **************************************                            00028000
+       77  FILLER        PIC X(26) VALUE '* INICIO WORKING-STORAGE *'.  00029000
+       77  FILLER        PIC X(26) VALUE '* CODIGOS RETORNO FILES  *'.  00030000
+
+      **************************************                            00040100
+      *         FILE STATUS                *                            00040200
+      **************************************                            00040300
+       77  WS-FILE-CLI       PIC XX    VALUE SPACES.                    00041001
+       77  WS-FILESAL-CODE   PIC XX    VALUE SPACES.
+      **************************************                            00042000
+                                                                        00043000
+       77  WS-STATUS-CLI    PIC X.                                      00044001
+           88  WS-FIN-CLI             VALUE 'Y'.                        00045001
+           88  WS-NO-FIN-CLI          VALUE 'N'.                        00046001
+                                                                        00047000
+       77  WS-LECTURA-OK    PIC X.                                      00047100
+           88  WS-OK                  VALUE 'Y'.                        00047200
+           88  WS-NO-OK               VALUE 'N'.                        00047300
+                                                                        00047400
+       77  WS-STA-FILESAL   PIC XX    VALUE SPACES.
+           88  WS-STA-FILESAL-FIN     VALUE '10'.
+      *
+           COPY CPDATOCD.                                               00111101
+      *
+
+      **************************************                            00048000
+      *         LAYOUT ESTADO CIVIL        *                            00049000
+      **************************************                            00050000
+                                                                        00113900
+      * CONTADOR DE LEIDOS                                              00114000
+       77  WS-CANT-LEIDOS          PIC 9(3)            VALUE ZEROS.     00114100
+      * CONTADOR DE GRABADOS
+       77  WS-GRABADOS-FILESAL     PIC 9(3)            VALUE ZEROS.
+
+      * CONTADORES, SUMADORES Y VARIABLES DE SALIDA
+       77  WS-EST-CIV-EDIT         PIC ZZ9             VALUE ZEROS.     00114200
+       77  WS-EST-CIV-GRAB         PIC ZZ9             VALUE ZEROS.     00114200
+       77  WS-EST-CIV-ANT          PIC X(10)           VALUE SPACES.    00114301
+       77  WS-TOTAL-EST-CIV        PIC 9(3)            VALUE ZEROS.     00114601
+       77  WS-CLIS-IMPORTE-ACUM    PIC S9(09)V99 COMP-3 VALUE ZEROS.
+       77  WS-CLIS-IMPORTE-ACUM-MASC
+                                   PIC -Z(09)9,99    VALUE ZEROS.       00114701
+       77  WS-SUM-PATRIM           PIC S9(09)V99     VALUE ZEROS.
+       77  WS-SUM-PATRIM-DISP      PIC -ZZZ.ZZZ.ZZZ.ZZZ.ZZ9,99
+                                                     VALUE ZEROS.
+       77  WS-SUM-PATRIM-TOT       PIC S9(09)V99     VALUE ZEROS.
+       77  WS-SUM-PATRIM-TOT-DISP  PIC -ZZZ.ZZZ.ZZZ.ZZZ.ZZ9,99
+                                                     VALUE ZEROS.
+       77  WS-SUM-DEUDOR           PIC S9(09)V99     VALUE ZEROS.
+       77  WS-SUM-DEUDOR-DISP      PIC -ZZZ.ZZZ.ZZZ.ZZZ.ZZ9,99
+                                                     VALUE ZEROS.
+       77  WS-SUM-DEUDOR-TOT       PIC S9(09)V99     VALUE ZEROS.
+       77  WS-SUM-DEUDOR-TOT-DISP  PIC -ZZZ.ZZZ.ZZZ.ZZZ.ZZ9,99
+                                                     VALUE ZEROS.
+
+      **************************************
+      *         LAYOUT LISTADO             *
+      *     LARGO REGISTRO = 133 BYTES     *
+      **************************************
+       01  WS-GRAB-CORTE.
+
+           03  FILLER              PIC X(14)
+                  VALUE 'ESTADO CIVIL: '.
+           03  WS-GRAB-EST-CIV     PIC X(10)    VALUE SPACES.
+           03  FILLER              PIC X(18)
+                  VALUE ' PATRIMONIO EN $: '.
+           03  WS-GRAB-PATRIM      PIC -ZZZ.ZZZ.ZZZ.ZZZ.ZZ9,99
+                                                     VALUE ZEROS.
+           03  FILLER              PIC X(13)
+                  VALUE ' DEUDA EN $: '.
+           03  WS-GRAB-DEUDOR      PIC -ZZZ.ZZZ.ZZZ.ZZZ.ZZ9,99
+                                                     VALUE ZEROS.
+           03  FILLER              PIC X        VALUE SPACES.
+
+       01  WS-GRAB-CORTE-TOTAL.
+
+           03  FILLER              PIC X(25)
+                  VALUE 'TOTALES GENERALES        '.
+           03  FILLER              PIC X(18)
+                  VALUE ' PATRIMONIO EN $: '.
+           03  WS-GRAB-PATRIM-TOT  PIC -ZZZ.ZZZ.ZZZ.ZZZ.ZZ9,99
+                                                     VALUE ZEROS.
+           03  FILLER              PIC X(13)
+                  VALUE ' DEUDA EN $: '.
+           03  WS-GRAB-DEUDOR-TOT  PIC -ZZZ.ZZZ.ZZZ.ZZZ.ZZ9,99
+                                                     VALUE ZEROS.
+           03  FILLER              PIC X        VALUE SPACES.
+
+      * ULTIMA LINEA POR P·GINA 60
+       77  WS-CUENTA-LINEA         PIC 9(02)    VALUE ZEROS.
+       77  WS-CUENTA-PAGINA        PIC 9(02)    VALUE 01.
+
+       01  WS-TITULO.
+           03  FILLER              PIC X        VALUE SPACES.
+           03  WS-SUC              PIC ZZ9      VALUE ZEROS.
+           03  FILLER              PIC X(05)    VALUE SPACES.
+           03  FILLER              PIC X(35)    VALUE
+             'TOTAL CLIENTE/CUENTA POR SUCURSAL: ' .
+           03  FILLER              PIC X        VALUE SPACES.
+           03  WS-DD               PIC Z9       VALUE ZEROS.
+           03  FILLER              PIC X        VALUE '-'.
+           03  WS-MM               PIC Z9       VALUE ZEROS.
+           03  FILLER              PIC X        VALUE '-'.
+           03  FILLER              PIC 99       VALUE 20.
+           03  WS-AA               PIC 99       VALUE ZEROS.
+           03  FILLER              PIC X(4)     VALUE SPACES.
+           03  FILLER              PIC X(15)   VALUE
+                'NUMERO PAGINA: '.
+           03  WS-PAGINA           PIC Z9       VALUE ZEROS.
+           03  FILLER              PIC X(41)    VALUE SPACES.
+
+      ********     CONTADOR DE LEIDOS Y GRABADOS  *
+
+       01  WS-LEIDOS-FILE1      PIC 9(05)        VALUE ZEROS.
+       01  WS-IMPRESOS          PIC 9(05)        VALUE ZEROS.
+
+       77  WS-LINEA             PIC X(132)       VALUE '-'.
+
+
+       77  FILLER        PIC X(26) VALUE '* FINAL  WORKING-STORAGE *'.  00114801
+
+      ***************************************************************.  00115001
+       PROCEDURE DIVISION.                                              00115101
+      **************************************                            00115201
+      *                                    *                            00116000
+      *  CUERPO PRINCIPAL DEL PROGRAMA     *                            00117000
+      *                                    *                            00118000
+      **************************************                            00119000
+       MAIN-PROGRAM.                                                    00120000
+                                                                        00130000
+           PERFORM 1000-INICIO  THRU   F-1000-INICIO.                   00140000
+                                                                        00150000
+           PERFORM 2000-PROCESO  THRU  F-2000-PROCESO                   00160000
+                   UNTIL WS-FIN-CLI.                                    00170000
+                                                                        00180000
+           PERFORM 9999-FINAL    THRU  F-9999-FINAL.                    00190000
+                                                                        00200000
+       F-MAIN-PROGRAM. GOBACK.                                          00210000
+                                                                        00220000
+      **************************************                            00230000
+      *                                    *                            00240000
+      *  CUERPO INICIO APERTURA ARCHIVOS   *                            00250000
+      *                                    *                            00260000
+      **************************************                            00270000
+       1000-INICIO.                                                     00280000
+                                                                        00281001
+           SET WS-NO-FIN-CLI TO TRUE                                    00290000
+                                                                        00300000
+      *    OPEN CLIENTE
+      *
+           OPEN INPUT  CLIENTE                                          00310000
+                                                                        00330000
+           IF WS-FILE-CLI IS NOT EQUAL '00'                             00340000
+              DISPLAY '* ERROR EN OPEN CLIENTE = ' WS-FILE-CLI          00350000
+              MOVE 9999 TO RETURN-CODE                                  00360000
+              SET  WS-FIN-CLI     TO TRUE                               00370000
+           END-IF                                                       00380000
+                                                                        00390000
+           IF WS-NO-FIN-CLI                                             00391000
+              PERFORM 2500-LEER     THRU F-2500-LEER                    00400000
+           END-IF                                                       00420000
+                                                                        00421000
+           IF WS-FIN-CLI                                                00421000
+              DISPLAY 'EL ARCHIVO ESTA VACIO'                           00421000
+           ELSE                                                         00421000
+              MOVE WS-DATO-EST-CIV  TO WS-EST-CIV-ANT                   00421000
+           END-IF                                                       00422000
+
+      *    OPEN SALIDA
+      *                                                                 00422000
+           OPEN OUTPUT FILESAL.
+
+           IF WS-FILESAL-CODE IS NOT EQUAL '00'
+              DISPLAY '* ERROR EN OPEN SALIDA = '  WS-FILESAL-CODE
+              MOVE 9999 TO RETURN-CODE
+              SET  WS-STA-FILESAL-FIN TO TRUE
+           END-IF
+           .
+       F-1000-INICIO.   EXIT.                                           00430000
+                                                                        00440000
+      **************************************                            00450000
+      *                                    *                            00460000
+      *  CUERPO PRINCIPAL DE PROCESOS      *                            00470000
+      *                                    *                            00480000
+      **************************************                            00490000
+       2000-PROCESO.                                                    00500000
+      *                                                                 00510000
+           IF WS-DATO-EST-CIV     = WS-EST-CIV-ANT                      00620000
+                 ADD 1            TO  WS-TOTAL-EST-CIV                  00421000
+                 ADD WS-DATO-PATRIM TO  WS-SUM-PATRIM
+                 ADD WS-DATO-DEUDOR TO  WS-SUM-DEUDOR
+                 ADD WS-DATO-PATRIM TO  WS-SUM-PATRIM-TOT
+                 ADD WS-DATO-DEUDOR TO  WS-SUM-DEUDOR-TOT
+      *          ADD CLIS-IMPORTE TO  WS-CLIS-IMPORTE-ACUM
+      *          PERFORM 2550-GRABAR-FILESAL
+      *                      THRU  F-2550-GRABAR-FILESAL
+                 PERFORM 2500-LEER     THRU F-2500-LEER                 00610000
+           ELSE                                                         00620000
+              PERFORM 2600-CORTE-EST-CIV  THRU F-2600-CORTE-EST-CIV     00620000
+           END-IF                                                       00620000
+                                                                        00620000
+           .                                                            00620000
+                                                                        00620000
+       F-2000-PROCESO. EXIT.                                            00630000
+                                                                        00640000
+      **************************************                            00650000
+      *  LEER REGISTROS                    *                            00660000
+      **************************************                            00670000
+       2500-LEER.                                                       00680000
+                                                                        00680000
+           READ CLIENTE   INTO  WS-REG-DATOS                            00690000
+      *
+           EVALUATE WS-FILE-CLI                                         00710000
+              WHEN '00'                                                 00720000
+                           ADD 1 TO WS-CANT-LEIDOS                      00730000
+              WHEN '10'                                                 00740000
+                   SET WS-FIN-CLI  TO TRUE                              00750000
+                  PERFORM 2600-CORTE-EST-CIV THRU F-2600-CORTE-EST-CIV  00620000
+              WHEN OTHER                                                00770000
+                  DISPLAY '* ERROR EN LECTURA CLIENTE  = ' WS-FILE-CLI  00780000
+                  MOVE 9999 TO RETURN-CODE                              00790000
+                  SET WS-FIN-CLI  TO TRUE                               00800000
+           END-EVALUATE                                                 00820000
+           .                                                            00830000
+                                                                        00830000
+       F-2500-LEER. EXIT.                                               00840000
+                                                                        00830000
+
+      **************************************
+      *  GRABAR FILESAL                    *
+      **************************************
+       2550-GRABAR-FILESAL.
+
+           IF WS-CUENTA-LINEA GREATER 65
+               PERFORM 2580-IMPRIMIR-TITULOS THRU
+                     F-2580-IMPRIMIR-TITULOS
+           END-IF.
+
+            WRITE REG-FILESAL FROM WS-GRAB-CORTE AFTER 1
+      *             DISPLAY    WS-GRAB-CORTE
+            EVALUATE WS-FILESAL-CODE
+              WHEN '00'
+                             ADD 1 TO WS-GRABADOS-FILESAL
+               WHEN '10'
+                 CONTINUE
+
+            WHEN OTHER
+               DISPLAY '* ERROR EN GRABAR CLIENTE =  ' WS-FILESAL-CODE
+               MOVE 9999 TO RETURN-CODE
+               SET WS-STA-FILESAL-FIN  TO TRUE
+
+            END-EVALUATE
+            .
+       F-2550-GRABAR-FILESAL. EXIT.                                     00930000
+
+      *   IMPRIMIR TITULOS
+
+       2580-IMPRIMIR-TITULOS.
+           MOVE WS-CUENTA-PAGINA      TO WS-PAGINA.
+           MOVE 1     TO WS-CUENTA-LINEA.
+           ADD  1     TO WS-CUENTA-PAGINA.
+      *    MOVE  NOV-SUC           TO    WS-SUC.
+           WRITE   REG-FILESAL   FROM WS-TITULO   AFTER PAGE.
+
+              IF WS-FILESAL-CODE  IS NOT EQUAL '00'
+                DISPLAY '* ERROR EN GRABAR LISTADO = '
+                                            WS-FILESAL-CODE
+                MOVE 9999 TO RETURN-CODE
+                SET WS-STA-FILESAL-FIN TO TRUE
+             END-IF.
+
+       F-2580-IMPRIMIR-TITULOS. EXIT.
+
+      **************************************
+      *  GRABAR FILESAL TOTALES            *
+      **************************************
+       2590-GRABAR-FILESAL-TOT.
+
+           IF WS-CUENTA-LINEA GREATER 65
+               PERFORM 2580-IMPRIMIR-TITULOS THRU
+                     F-2580-IMPRIMIR-TITULOS
+           END-IF.
+            WRITE REG-FILESAL FROM WS-LINEA            AFTER 1
+            WRITE REG-FILESAL FROM WS-GRAB-CORTE-TOTAL AFTER 1
+      *              DISPLAY   WS-GRAB-CORTE-TOTAL
+            EVALUATE WS-FILESAL-CODE
+              WHEN '00'
+                             ADD 1 TO WS-GRABADOS-FILESAL
+               WHEN '10'
+                 CONTINUE
+
+            WHEN OTHER
+               DISPLAY '* ERROR EN GRABAR TOTALES =  ' WS-FILESAL-CODE
+               MOVE 9999 TO RETURN-CODE
+               SET WS-STA-FILESAL-FIN  TO TRUE
+
+            END-EVALUATE
+            .
+       F-2590-GRABAR-FILESAL-TOT. EXIT.                                 00930000
+
+      **************************************
+      *  CORTE                             *
+      **************************************
+
+       2600-CORTE-EST-CIV.
+
+           MOVE WS-SUM-PATRIM  TO    WS-SUM-PATRIM-DISP
+           MOVE WS-SUM-DEUDOR  TO    WS-SUM-DEUDOR-DISP
+      *
+           MOVE WS-EST-CIV-ANT TO    WS-GRAB-EST-CIV
+           MOVE WS-SUM-PATRIM  TO    WS-GRAB-PATRIM
+           MOVE WS-SUM-DEUDOR  TO    WS-GRAB-DEUDOR
+
+           PERFORM 2550-GRABAR-FILESAL
+                       THRU  F-2550-GRABAR-FILESAL
+
+      *    DISPLAY 'CANTIDAD DE CLIENTES DE LA SUCURSAL '
+      *             WS-EST-CIV-ANT ': '     WS-EST-CIV-EDIT
+      *    DISPLAY 'BALANCE DE LA SUCURSAL '
+      *             WS-EST-CIV-ANT ': '
+      *             WS-CLIS-IMPORTE-ACUM-MASC
+           DISPLAY 'ESTADO CIVIL: ' WS-EST-CIV-ANT
+           DISPLAY '       PATRIMONIO EN $: ' WS-SUM-PATRIM-DISP
+           DISPLAY '            DEUDA EN $: ' WS-SUM-DEUDOR-DISP
+      *    MOVE    'BALANCE DE LA SUCURSAL ' WS-SUC-CLIS-SUC-ANT
+      *            ': ' WS-CLIS-IMPORTE-ACUM-MASC TO WS-SAL-CORTE
+      *    MOVE   'WS-CLIS-IMPORTE-ACUM'     TO WS-SAL-CORTE
+           DISPLAY  ' '
+           MOVE WS-DATO-EST-CIV  TO     WS-EST-CIV-ANT
+           MOVE 0        TO     WS-TOTAL-EST-CIV
+           MOVE 0        TO     WS-SUM-PATRIM
+           MOVE 0        TO     WS-SUM-DEUDOR
+           .
+
+       F-2600-CORTE-EST-CIV. EXIT.                                      00840000
+
+      **************************************                            00940000
+      *  CUERPO FINAL CIERRE DE FILES      *                            00950000
+      *                                    *                            00960000
+      **************************************                            00970000
+       9999-FINAL.                                                      00980000
+      *                                                                 00990000
+
+      **************************************                            01090000
+      *   MOSTRAR TOTALES DE CONTROL                                    01100000
+      **************************************                            01110000
+                                                                        01110000
+              IF RETURN-CODE = 9999                                     00990000
+                NEXT SENTENCE                                           00990000
+              ELSE                                                      00990000
+                MOVE WS-SUM-PATRIM-TOT TO WS-GRAB-PATRIM-TOT
+                MOVE WS-SUM-DEUDOR-TOT TO WS-GRAB-DEUDOR-TOT
+                PERFORM 2590-GRABAR-FILESAL-TOT
+                       THRU  2590-GRABAR-FILESAL-TOT
+
+                DISPLAY '                           '                   01130000
+                MOVE WS-CANT-LEIDOS       TO  WS-EST-CIV-EDIT           01140000
+                MOVE WS-SUM-PATRIM-TOT TO WS-SUM-PATRIM-TOT-DISP
+                MOVE WS-SUM-DEUDOR-TOT TO WS-SUM-DEUDOR-TOT-DISP
+                DISPLAY 'TOTALES GENERALES'
+                DISPLAY 'PATRIMONIO EN $: ' WS-SUM-PATRIM-TOT-DISP
+                DISPLAY '     DEUDA EN $: ' WS-SUM-DEUDOR-TOT-DISP
+      *         MOVE WS-GRABADOS-FILESAL  TO  WS-SUC-GRAB               01140000
+                DISPLAY 'CANTIDAD REGISTROS LEIDOS   '  WS-EST-CIV-EDIT 01150000
+      *         DISPLAY 'CANTIDAD REGISTROS GRABADOS '   WS-SUC-GRAB    01150000
+              END-IF                                                    01160000
+
+      **************************************                            01090000
+      *   CIERRE DE ARCHIVOS                                           I01100000
+      **************************************                            01110000
+
+           IF RETURN-CODE = 9999                                        00990000
+              NEXT SENTENCE                                             00990000
+           ELSE                                                         00990000
+                                                                        00990000
+              CLOSE CLIENTE                                             01000000
+                IF WS-FILE-CLI IS NOT EQUAL '00'                        01010000
+                    DISPLAY '* ERROR EN CLOSE CLIENTE = '               01020000
+                                            WS-FILE-CLI                 01030000
+                    MOVE 9999 TO RETURN-CODE                            01040000
+                    SET WS-FIN-CLI     TO TRUE                          01050000
+                END-IF                                                  01060000
+
+              CLOSE  FILESAL
+                 IF WS-FILESAL-CODE IS NOT EQUAL '00'
+                   DISPLAY '* ERROR EN CLOSE FEMENINO= '
+                                               WS-FILESAL-CODE
+                   MOVE 9999 TO RETURN-CODE
+                   SET WS-STA-FILESAL-FIN TO TRUE
+                END-IF                                                  01080000
+
+
+           END-IF                                                       01160000
+           .                                                            01160000
+                                                                        01160000
+       F-9999-FINAL.                                                    01210000
+           EXIT.                                                        01220000
+      *                                                                 01230000
+

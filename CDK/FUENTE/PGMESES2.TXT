@@ -1,0 +1,80 @@
+       IDENTIFICATION DIVISION.
+      **************************************
+      *    AUTOR:      FABIO CICERELLI     *
+      *    COMISION:   F                   *
+      **************************************
+       PROGRAM-ID. PGMESES2.
+       DATA DIVISION.
+      **************************************
+       WORKING-STORAGE SECTION.
+      **************************************
+       77  FILLER        PIC X(26) VALUE '* INICIO WORKING-STORAGE *'.
+
+      * VARIABLE 1
+       01  FECHA.
+            05  DIA           PIC X(2)  VALUE ZEROS.
+            05  MES           PIC X(2)  VALUE ZEROS.
+            05  ANIO          PIC X(4)  VALUE ZEROS.
+
+      * VARIABLE 2
+       01  MES-NUM            PIC 9(2)  VALUE ZEROS.
+
+      * VARIABLE PARA MOSTRAR SUMATORIA FINAL
+      *77  WS-DISPLAY    PIC 9(4)  VALUE ZEROS.
+       77  FILLER        PIC X(26) VALUE '* FINAL  WORKING-STORAGE *'.
+
+      **************************************
+       PROCEDURE DIVISION.
+      **************************************
+           ACCEPT FECHA          FROM SYSIN.
+           MOVE MES              TO MES-NUM.
+           EVALUATE MES-NUM
+               WHEN 1
+                    DISPLAY  'EL MES ES: ENERO'
+               WHEN 2
+                    DISPLAY  'EL MES ES: FEBRERO'
+               WHEN 3
+                    DISPLAY  'EL MES ES: MARZO'
+               WHEN 4
+                    DISPLAY  'EL MES ES: ABRIL'
+               WHEN 5
+                    DISPLAY  'EL MES ES: MAYO'
+               WHEN 6
+                    DISPLAY  'EL MES ES: JUNIO'
+               WHEN 7
+                    DISPLAY  'EL MES ES: JULIO'
+               WHEN 8
+                    DISPLAY  'EL MES ES: AGOSTO'
+               WHEN 9
+                    DISPLAY  'EL MES ES: SEPTIEMBRE'
+               WHEN 10
+                    DISPLAY  'EL MES ES: OCTUBRE'
+               WHEN 11
+                    DISPLAY  'EL MES ES: NOVIEMBRE'
+               WHEN 12
+                    DISPLAY  'EL MES ES: DICIEMBRE'
+               WHEN OTHER
+                    DISPLAY  'MES NO VALIDO'
+           END-EVALUATE.
+           EVALUATE MES-NUM
+               WHEN 1
+               WHEN 3
+               WHEN 5
+               WHEN 7
+               WHEN 8
+               WHEN 10
+               WHEN 12
+                    DISPLAY  'EL MES TIENE 31 DIAS'
+               WHEN 4
+               WHEN 6
+               WHEN 9
+               WHEN 11
+                    DISPLAY  'EL MES TIENE 30 DIAS'
+               WHEN 2
+                    DISPLAY  'FEBRERO TIENE 28 DIAS'
+               WHEN OTHER
+                    DISPLAY  'MES NO VALIDO'
+           END-EVALUATE.
+           GOBACK.
+
+

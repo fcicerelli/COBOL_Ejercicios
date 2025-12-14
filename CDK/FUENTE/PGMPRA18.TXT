@@ -1,0 +1,286 @@
+       IDENTIFICATION DIVISION.                                         00010000
+       PROGRAM-ID. PGMPRA18.                                            00020001
+       DATA DIVISION.                                                   00030000
+       FILE SECTION.                                                    00040000
+       WORKING-STORAGE SECTION.                                         00050000
+                                                                        00060000
+       01  WS-VARIABLES.                                                00070000
+           03 WS-MAP-00            PIC X(07)       VALUE 'MAP1A18'.     00080001
+           03 WS-MAPSET-00         PIC X(07)       VALUE 'MAP1A18'.     00090001
+           03 WS-MAP-01            PIC X(07)       VALUE 'MAP1A18'.     00100001
+           03 WS-MAPSET-01         PIC X(07)       VALUE 'MAP1A18'.     00110001
+           03 WS-LONG              PIC S9(04) COMP.                     00120000
+           03 WS-COMLONG           PIC S9(04) COMP.                     00130000
+           03 WS-ABSTIME           PIC S9(16) COMP VALUE +0.            00140000
+           03 WS-FECHA             PIC X(10)       VALUE SPACES.        00150000
+           03 WS-SEP-DATE          PIC X           VALUE '/'.           00160000
+           03 WS-HORA              PIC X(08)       VALUE SPACES.        00170000
+           03 WS-SEP-HOUR          PIC X           VALUE ':'.           00180000
+           03 WS-RESP              PIC S9(04) COMP.                     00190000
+           03 SW-CONFIRMAR         PIC X VALUE 'Y'.                     00200000
+           03 WS-NORMAL    PIC X VALUE '*'.                             00210000
+           03 WS-ENTER     PIC X VALUE ' '.                             00220000
+                                                                        00230000
+       01  CT-CONSTANTES.                                               00240000
+           03 CT-MSGO.                                                  00250000
+              05 CT-MNS-01         PIC X(72) VALUE                      00260000
+                             'INGRESE LOS DATOS Y PRESIONE ENTER'.      00270000
+              05 CT-MNS-02         PIC X(72) VALUE                      00280000
+                            'DATOS INGRESADOS INCORRECTOS - REINGRESE'. 00290000
+              05 CT-MNS-03         PIC X(72) VALUE                      00300000
+                    'TIPO Y NÚMERO DOCUMENTO INEXISTENTES - REINGRESE'. 00310000
+              05 CT-MNS-04         PIC X(72) VALUE                      00320000
+                            'TIPO DE DOCUMENTO INVALIDO'.               00330000
+              05 CT-MNS-05         PIC X(72) VALUE                      00340000
+                            'NUMERO DE DOCUMENTO INVALIDO'.             00350000
+              05 CT-MNS-06         PIC X(72) VALUE 'CLIENTE ENCONTRADO'.00360000
+              05 CT-MNS-07         PIC X(72) VALUE 'SELECCIONAR OPCION'.00370000
+              05 CT-MNS-08         PIC X(72) VALUE                      00380000
+                             'PROBLEMA CON ARCHIVO PERSONAS'.           00390000
+              05 CT-MNS-09         PIC X(72) VALUE 'TECLA INVALIDA'.    00400000
+              05 CT-MNS-EXIT       PIC X(72) VALUE                      00410000
+                             'PRESIONE ENTER PARA VOLVER AL MENU'.      00420000
+           03 CT-DATASET           PIC X(08)  VALUE 'PERSONAS'.         00430000
+           03 CT-DATASET-LEN       PIC S9(04) COMP VALUE 160.           00440000
+                                                                        00450000
+       COPY MAP1A18.                                                    00460001
+       COPY DFHBMSCA.                                                   00470000
+       COPY DFHAID.                                                     00480000
+       COPY CPPERSON.                                                   00490000
+                                                                        00500000
+       01  WS-COMMAREA.                                                 00510000
+           03 WS-USER-DATA.                                             00520000
+              05 WS-USER-TIPDOC    PIC X(02).                           00530000
+              05 WS-USER-NRODOC    PIC 9(11).                           00540000
+           03 WS-TIP-DOC           PIC X(02).                           00550000
+              88 WS-TIP-DOC-BOOLEAN                   VALUE 'DU'        00560000
+                                                            'PA'        00570000
+                                                            'PE'.       00580000
+           03 WS-PRIMERA           PIC 9.                               00590000
+           03 FILLER               PIC X(4).                            00600000
+                                                                        00610000
+       LINKAGE SECTION.                                                 00620000
+                                                                        00630000
+       01 DFHCOMMAREA PIC X(20).                                        00640000
+                                                                        00650000
+       PROCEDURE DIVISION.                                              00660000
+                                                                        00670000
+       MAIN-PROGRAM.                                                    00680000
+                                                                        00690000
+           PERFORM 1000-I-INICIO THRU 1000-F-INICIO.                    00700000
+                                                                        00710000
+           PERFORM 2000-I-PROCESO THRU 2000-F-PROCESO.                  00720000
+                                                                        00730000
+           PERFORM 9999-I-FINAL   THRU 9999-F-FINAL.                    00740000
+                                                                        00750000
+       1000-I-INICIO.                                                   00760000
+                                                                        00770000
+           INITIALIZE MAP1A18I.                                         00780001
+           MOVE LOW-VALUES TO MAP1A18O.                                 00790001
+                                                                        00800000
+           MOVE DFHCOMMAREA TO WS-COMMAREA.                             00810000
+                                                                        00820000
+           IF WS-PRIMERA = 0                                            00830000
+               MOVE LENGTH OF MAP1A18O TO WS-LONG                       00840001
+               MOVE CT-MNS-01 TO MSG1O                                  00850000
+               PERFORM 7000-I-TIME THRU 7000-F-TIME                     00860000
+               EXEC CICS                                                00870000
+                  SEND MAP ('MAP1A18')                                  00880001
+                       MAPSET ('MAP1A18')                               00890001
+                       FROM (MAP1A18O)                                  00900001
+                       LENGTH (WS-LONG)                                 00910000
+                       ERASE                                            00920000
+                       FREEKB                                           00930000
+               END-EXEC                                                 00940000
+               MOVE 1 TO WS-PRIMERA                                     00950000
+               PERFORM 9999-I-FINAL THRU 9999-F-FINAL                   00960000
+           END-IF.                                                      00970000
+                                                                        00980000
+       1000-F-INICIO. EXIT.                                             00990000
+                                                                        01000000
+       2000-I-PROCESO.                                                  01010000
+                                                                        01020000
+      * PARA CONSULTA GENERAL Y PAGINADO                                01030000
+                                                                        01040000
+                                                                        01050000
+             PERFORM 7000-I-TIME THRU 7000-F-TIME                       01060000
+             MOVE LENGTH OF MAP1A18O TO WS-LONG                         01070001
+                                                                        01080000
+             EXEC CICS                                                  01090000
+                RECEIVE MAP ('MAP1A18')                                 01100001
+                        MAPSET ('MAP1A18')                              01110001
+                        INTO (MAP1A18I)                                 01120001
+                        RESP (WS-RESP)                                  01130000
+             END-EXEC                                                   01140000
+                                                                        01150000
+             PERFORM 2200-I-TECLAS THRU 2200-F-TECLAS                   01160000
+                                                                        01170000
+                 .                                                      01180000
+                                                                        01190000
+       2000-F-PROCESO. EXIT.                                            01200000
+                                                                        01210000
+       2200-I-TECLAS.                                                   01220000
+                                                                        01230000
+           EVALUATE EIBAID                                              01240000
+               WHEN DFHENTER                                            01250000
+                  PERFORM 3000-I-ENTER THRU 3000-F-ENTER                01260000
+                                                                        01270000
+               WHEN DFHPF3                                              01280000
+                  PERFORM 3100-I-PF3 THRU 3100-F-PF3                    01290000
+                                                                        01300000
+               WHEN DFHPF12                                             01310000
+                  PERFORM 3200-I-PF12 THRU 3200-F-PF12                  01320000
+                                                                        01330000
+               WHEN OTHER                                               01340000
+                  MOVE LOW-VALUES TO MAP1A18O                           01350001
+                  MOVE CT-MNS-09 TO   MSG1O                             01360000
+                  PERFORM 7000-I-TIME THRU 7000-F-TIME                  01370000
+                  EXEC CICS                                             01380000
+                     SEND MAP ('MAP1A18')                               01390001
+                          MAPSET ('MAP1A18')                            01400001
+                          FROM (MAP1A18O)                               01410001
+                          LENGTH (WS-LONG)                              01420000
+                          ERASE                                         01430000
+                  END-EXEC                                              01440000
+                                                                        01450000
+           END-EVALUATE.                                                01460000
+                                                                        01470000
+           PERFORM 9999-I-FINAL THRU 9999-F-FINAL                       01480000
+                 .                                                      01490000
+                                                                        01500000
+       2200-F-TECLAS. EXIT.                                             01510000
+                                                                        01520000
+       3000-I-ENTER.                                                    01530000
+                                                                        01540000
+           MOVE TIPDO1I TO WS-USER-TIPDOC                               01550000
+           MOVE NUMDO1I TO WS-USER-NRODOC                               01560000
+           MOVE TIPDO1I TO WS-TIP-DOC.                                  01570000
+           IF NOT WS-TIP-DOC-BOOLEAN                                    01580000
+              INITIALIZE MAP1A18O                                       01590001
+              MOVE CT-MNS-04            TO  MSG1O                       01600000
+              MOVE WS-USER-TIPDOC       TO  TIPDO1O                     01610000
+              MOVE WS-USER-NRODOC       TO  NUMDO1O                     01620000
+           ELSE                                                         01630000
+              IF NUMDO1I NOT NUMERIC                                    01640000
+                 INITIALIZE MAP1A18O                                    01650001
+                 MOVE CT-MNS-05 TO MSG1O                                01660000
+                 MOVE WS-USER-TIPDOC       TO  TIPDO1O                  01670000
+                 MOVE WS-USER-NRODOC       TO  NUMDO1O                  01680000
+              ELSE                                                      01690000
+                                                                        01700000
+                                                                        01710000
+                 EXEC CICS                                              01720000
+                    READ DATASET ('PERSONAS')                           01730000
+                         RIDFLD  (WS-USER-DATA)                         01740000
+                         INTO (REG-PERSONA)                             01750000
+                         LENGTH (CT-DATASET-LEN)                        01760000
+                         EQUAL                                          01770000
+                         RESP (WS-RESP)                                 01780000
+                 END-EXEC                                               01790000
+                 EVALUATE WS-RESP                                       01800000
+                     WHEN DFHRESP(NORMAL)                               01810000
+                        MOVE WS-USER-TIPDOC       TO  TIPDO1O           01820000
+                        MOVE WS-USER-NRODOC       TO  NUMDO1O           01830000
+                        MOVE PER-CLI-NRO          TO  NROCLIO           01840000
+                        MOVE PER-NOMAPE           TO  NOMAPEO           01850000
+                        MOVE PER-DIRECCION        TO  DIREO             01860000
+                        MOVE PER-TELEFONO         TO  TELEO             01870000
+                        MOVE PER-EMAIL            TO  EMAILO            01880000
+                        MOVE CT-MNS-06            TO  MSG1O             01890000
+                        MOVE LENGTH OF MAP1A18O   TO  WS-LONG           01900001
+                                                                        01910000
+                                                                        01920000
+                     WHEN DFHRESP(NOTFND)                               01930000
+                        MOVE WS-USER-TIPDOC       TO  TIPDO1O           01940000
+                        MOVE WS-USER-NRODOC       TO  NUMDO1O           01950000
+                        MOVE CT-MNS-03            TO  MSG1O             01960000
+                                                                        01970000
+                     WHEN OTHER                                         01980000
+                        MOVE WS-USER-TIPDOC       TO  TIPDO1O           01990000
+                        MOVE WS-USER-NRODOC       TO  NUMDO1O           02000000
+                        MOVE CT-MNS-08            TO  MSG1O             02010000
+                                                                        02020000
+                 END-EVALUATE                                           02030000
+              END-IF                                                    02040000
+           END-IF.                                                      02050000
+           PERFORM 7000-I-TIME THRU 7000-F-TIME.                        02060000
+           EXEC CICS                                                    02070000
+              SEND MAP ('MAP1A18')                                      02080001
+                   MAPSET ('MAP1A18')                                   02090001
+                   FROM (MAP1A18O)                                      02100001
+                   LENGTH (WS-LONG)                                     02110000
+                   ERASE                                                02120000
+           END-EXEC.                                                    02130000
+                                                                        02140000
+       3000-F-ENTER. EXIT.                                              02150000
+                                                                        02160000
+       3100-I-PF3.                                                      02170000
+                                                                        02180000
+           MOVE LOW-VALUES TO MAP1A18O.                                 02190001
+           PERFORM 7000-I-TIME THRU 7000-F-TIME.                        02200000
+           EXEC CICS                                                    02210000
+              SEND MAP ('MAP1A18')                                      02220001
+                   MAPSET ('MAP1A18')                                   02230001
+                   FROM (MAP1A18O)                                      02240001
+                   LENGTH (WS-LONG)                                     02250000
+                   ERASE                                                02260000
+           END-EXEC.                                                    02270000
+                                                                        02280000
+       3100-F-PF3. EXIT.                                                02290000
+                                                                        02300000
+       3200-I-PF12.                                                     02310000
+                                                                        02320000
+           EXEC CICS                                                    02330000
+              SEND CONTROL ERASE                                        02340000
+           END-EXEC.                                                    02350000
+                                                                        02360000
+           MOVE LENGTH OF MAP1A18O TO WS-LONG.                          02370001
+           INITIALIZE MAP1A18O.                                         02380001
+                                                                        02390000
+           MOVE CT-MNS-07 TO MSG1O.                                     02400000
+           PERFORM 7000-I-TIME THRU 7000-F-TIME.                        02410000
+           EXEC CICS                                                    02420000
+              SEND MAP ('MAP1A18')                                      02430001
+                   MAPSET ('MAP1A18')                                   02440001
+                   FROM (MAP1A18O)                                      02450001
+                   LENGTH (WS-LONG)                                     02460000
+                   ERASE                                                02470000
+           END-EXEC.                                                    02480000
+                                                                        02490000
+           MOVE LENGTH OF WS-COMMAREA TO WS-COMLONG.                    02500000
+                                                                        02510000
+           EXEC CICS                                                    02520000
+              RETURN                                                    02530000
+              TRANSID ('BA18')                                          02540001
+              COMMAREA (WS-COMMAREA)                                    02550000
+              LENGTH (WS-COMLONG)                                       02560000
+           END-EXEC.                                                    02570000
+                                                                        02580000
+       3200-F-PF12. EXIT.                                               02590000
+                                                                        02600000
+       7000-I-TIME.                                                     02610000
+                                                                        02620000
+           EXEC CICS ASKTIME                                            02630000
+              ABSTIME (WS-ABSTIME)                                      02640000
+           END-EXEC.                                                    02650000
+                                                                        02660000
+           EXEC CICS FORMATTIME                                         02670000
+              ABSTIME (WS-ABSTIME)                                      02680000
+              DDMMYYYY(WS-FECHA) DATESEP (WS-SEP-DATE)                  02690000
+              TIME (WS-HORA) TIMESEP (WS-SEP-HOUR)                      02700000
+           END-EXEC.                                                    02710000
+                                                                        02720000
+           MOVE WS-FECHA TO FECH1O.                                     02730000
+       7000-F-TIME. EXIT.                                               02740000
+                                                                        02750000
+       9999-I-FINAL.                                                    02760000
+                                                                        02770000
+           EXEC CICS                                                    02780000
+              RETURN                                                    02790000
+              TRANSID ('AA18')                                          02800001
+              COMMAREA (WS-COMMAREA)                                    02810000
+           END-EXEC.                                                    02820000
+                                                                        02830000
+       9999-F-FINAL. EXIT.                                              02840000
+                                                                        02850000
+

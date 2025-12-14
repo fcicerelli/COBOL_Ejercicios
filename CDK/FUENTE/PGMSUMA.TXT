@@ -1,0 +1,34 @@
+       IDENTIFICATION DIVISION.
+      **************************************
+      *    AUTOR:      FABIO CICERELLI     *
+      *    COMISION:   F                   *
+      **************************************
+       PROGRAM-ID. PGMSUMA.
+       DATA DIVISION.
+      **************************************
+       WORKING-STORAGE SECTION.
+      **************************************
+       77  FILLER        PIC X(26) VALUE '* INICIO WORKING-STORAGE *'.
+
+      * VARIABLE PARA ALMACENAR NUMEROS DEL 1 AL 10
+       77  WS-NUM        PIC 99    VALUE 1.
+
+      * VARIABLE PARA SUMAR LOS PRIMEROS 10 NúMEROS
+       77  WS-SUMA       PIC 9(3) COMP-3 VALUE ZEROS.
+
+      * VARIABLE PARA MOSTRAR SUMATORIA FINAL
+       77  WS-DISPLAY    PIC ZZ9         VALUE ZEROS.
+       77  FILLER        PIC X(26) VALUE '* FINAL  WORKING-STORAGE *'.
+
+      **************************************
+       PROCEDURE DIVISION.
+      **************************************
+           PERFORM UNTIL WS-NUM > 10
+               ADD WS-NUM TO WS-SUMA
+               ADD 1 TO WS-NUM
+           END-PERFORM.
+               MOVE WS-SUMA TO WS-DISPLAY
+               DISPLAY 'RESULTADO: ' WS-DISPLAY
+           GOBACK.
+
+

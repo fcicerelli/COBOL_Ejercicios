@@ -1,0 +1,32 @@
+         TITLE 'MAPA CONSULTA SALDO CLIENTE'                            00010000
+MAP0099  DFHMSD TYPE=&SYSPARM,MODE=INOUT,CTRL=(FREEKB,FRSET),          *00020002
+               LANG=COBOL,TIOAPFX=YES,COLOR=BLUE,TERM=3270-2            00030000
+                                                                        00040000
+MAP0099  DFHMDI SIZE=(24,80)                                            00050002
+         DFHMDF POS=(1,07),LENGTH=26,INITIAL='CONSULTA DE CLIENTES   '  00060000
+         DFHMDF POS=(1,34),LENGTH=1,ATTRB=PROT                          00080000
+                                                                        00090000
+TXXX     DFHMDF POS=(01,60),LENGTH=12,ATTRB=PROT,INITIAL='T199-MAP0099' 00100003
+                                                                        00110000
+FECHA    DFHMDF POS=(02,60),LENGTH=10,ATTRB=PROT,INITIAL='99-99-9999'   00120000
+                                                                        00130000
+         DFHMDF POS=(05,09),LENGTH=18,INITIAL='TIPO DE DOCUMENTO:'      00140000
+TIPDOC   DFHMDF POS=(05,31),LENGTH=02,PICIN='X(02)',PICOUT='X(02)',    *00150000
+               COLOR=YELLOW,ATTRB=(IC,UNPROT,FSET)                      00160000
+         DFHMDF POS=(05,34),LENGTH=01,ATTRB=(ASKIP,PROT)                00170000
+                                                                        00170100
+         DFHMDF POS=(07,09),LENGTH=20,INITIAL='NUMERO DE DOCUMENTO:'    00171000
+NRODOC   DFHMDF POS=(07,31),LENGTH=11,PICIN='9(11)',PICOUT='Z(11)',    *00172000
+               COLOR=YELLOW,ATTRB=(UNPROT,NUM,FSET)                     00173000
+         DFHMDF POS=(07,43),LENGTH=01,ATTRB=(ASKIP,PROT)                00174000
+                                                                        00180000
+                                                                        00230000
+MSG      DFHMDF POS=(21,01),LENGTH=72,ATTRB=PROT,COLOR=RED,            *00240000
+               PICOUT='X(72)',HILIGHT=UNDERLINE,INITIAL='INGRESE DATOS' 00250000
+         DFHMDF POS=(21,74),LENGTH=01,ATTRB=(ASKIP,PROT)                00260000
+         DFHMDF POS=(24,05),LENGTH=12,INITIAL='ENTER:Buscar'            00270000
+         DFHMDF POS=(24,30),LENGTH=11,INITIAL='PF3:Limpiar'             00280000
+         DFHMDF POS=(24,57),LENGTH=10,INITIAL='PF12:Salir'              00290000
+         DFHMSD TYPE=FINAL                                              00300000
+         END                                                            00310000
+

@@ -1,0 +1,158 @@
+       IDENTIFICATION DIVISION.                                         00010000
+      *                                                        *        00010500
+        PROGRAM-ID PGMNE001.                                            00011027
+      **********************************************************        00012000
+      * PROGRAMA QUE LEE LA EDADES QUE ENTRARA POR UN ARCHIVO  *        00017822
+      * Y CUNETA LOS MAYOYES DE 18 AñOS Y LOS MENORES          *        00017922
+      * MOSTRANDOLOS MEDIANTE DISPLAYS                         *        00018022
+      *                                                        *        00018100
+      **********************************************************        00018202
+       ENVIRONMENT DIVISION.                                            00020000
+       INPUT-OUTPUT SECTION.                                            00020200
+       FILE-CONTROL.                                                    00020300
+             SELECT E1EDADES  ASSIGN DDEDADES                           00020418
+                    FILE STATUS IS FS-E1EDADES.                         00020520
+                                                                        00026007
+       DATA DIVISION.                                                   00039000
+       FILE SECTION.                                                    00039100
+       FD E1EDADES                                                      00039218
+            BLOCK CONTAINS 0 RECORDS                                    00039300
+            RECORDING MODE IS F.                                        00039400
+                                                                        00039518
+       01 REG-E1EDADES   PIC X(02).                                     00039618
+                                                                        00039718
+      **************************************                            00041104
+       WORKING-STORAGE SECTION.                                         00041204
+      **************************************                            00041304
+       77  FILLER        PIC X(26) VALUE '* INICIO WORKING-STORAGE *'.  00041404
+      **************************************                            00041800
+                                                                        00046000
+       01  FS-E1EDADES     PIC XX.                                      00047019
+           88  FS-E1EDADES-FIN        VALUE '10'.                       00048018
+      *                                                                 00049018
+       77  EDAD                    PIC 9(02)      VALUE ZEROS.          00050019
+      * CONTADORES (SE PUEDEN CAMBIAR A VOLUNTAD LOS AGREGUé DE EJEMPLO)00111418
+       77  WS-CANT-MAYORES         PIC 9(03)      VALUE ZEROS.          00111618
+       77  WS-CANT-MENORES         PIC 9(03)      VALUE ZEROS.          00111718
+       77  WS-CANT-TOTALES         PIC 9(03)      VALUE ZEROS.          00111818
+                                                                        00112000
+      ***************************************************************.  00120000
+       PROCEDURE DIVISION.                                              00130000
+      **************************************                            00140000
+      *                                    *                            00150000
+      *  CUERPO PRINCIPAL DEL PROGRAMA     *                            00160000
+      *                                    *                            00170000
+      **************************************                            00180000
+       MAIN-PROGRAM.                                                    00190000
+                                                                        00200000
+           PERFORM 1000-INICIO   THRU    1000-INICIO-F                  00210006
+                                                                        00220000
+           PERFORM 2000-PROCESO  THRU    2000-PROCESO-F                 00230006
+                   UNTIL FS-E1EDADES-FIN                                00240018
+                                                                        00250000
+           PERFORM 3000-FINAL    THRU    3000-FINAL-F                   00260006
+           .                                                            00270006
+       F-MAIN-PROGRAM. GOBACK.                                          00280000
+                                                                        00290000
+      **************************************                            00300000
+      *                                    *                            00310000
+      *  CUERPO INICIO APERTURA ARCHIVOS   *                            00320000
+      *                                    *                            00330000
+      **************************************                            00340000
+       1000-INICIO.                                                     00350000
+                                                                        00470000
+           INITIALIZE     EDAD                                          00471026
+                          WS-CANT-MAYORES                               00473026
+                          WS-CANT-MENORES                               00474026
+                          WS-CANT-TOTALES                               00475026
+           PERFORM 1100-OPEN-ARCHIVOS THRU 1100-OPEN-ARCHIVOS-F         00480003
+           PERFORM 2100-LEER          THRU 2100-LEER-F                  00481012
+           .                                                            00580003
+       1000-INICIO-F. EXIT.                                             00660003
+      *                                                                 00660103
+       1100-OPEN-ARCHIVOS.                                              00660203
+           OPEN INPUT  E1EDADES                                         00661019
+      *                                                                 00663019
+           IF FS-E1EDADES IS NOT EQUAL '00'                             00664019
+              DISPLAY '* ERROR EN OPEN ARCHIVO= '   FS-E1EDADES         00665019
+              MOVE 9999 TO RETURN-CODE                                  00666003
+              SET  FS-E1EDADES-FIN TO TRUE                              00667019
+              PERFORM 99999-ERROR                                       00668003
+           END-IF                                                       00669003
+           .                                                            00670903
+       1100-OPEN-ARCHIVOS-F. EXIT.                                      00671003
+                                                                        00672019
+      **************************************                            00680000
+      *                                    *                            00690000
+      *  CUERPO PRINCIPAL DE PROCESOS      *                            00700000
+      *                                    *                            00730000
+      **************************************                            00740000
+       2000-PROCESO.                                                    00750000
+           IF EDAD > 18                                                 01052026
+              ADD 1       TO WS-CANT-MAYORES                            01053026
+           ELSE                                                         01054026
+              ADD 1       TO WS-CANT-MENORES                            01055026
+           END-IF                                                       01056026
+           PERFORM 2100-LEER           THRU 2100-LEER-F                 01057026
+           .                                                            01058026
+       2000-PROCESO-F. EXIT.                                            01060006
+                                                                        01060100
+      **************************************                            01060200
+      *  LEER EDADES                       *                            01060319
+      **************************************                            01060400
+       2100-LEER.                                                       01061011
+           READ E1EDADES          INTO EDAD                             01061119
+                                                                        01061300
+           EVALUATE FS-E1EDADES                                         01061419
+             WHEN '00'                                                  01061500
+                            ADD 1 TO WS-CANT-TOTALES                    01061619
+      *                                                                 01061719
+              WHEN '10'                                                 01061800
+                CONTINUE                                                01061903
+      *                                                                 01062019
+              WHEN OTHER                                                01062105
+              DISPLAY '* ERROR EN LECTURA ARCHIVO= ' FS-E1EDADES        01062219
+              MOVE 9999 TO RETURN-CODE                                  01062300
+              SET FS-E1EDADES-FIN TO TRUE                               01062419
+              PERFORM 99999-ERROR                                       01062501
+                                                                        01062600
+           END-EVALUATE                                                 01062704
+           .                                                            01062804
+       2100-LEER-F. EXIT.                                               01063011
+                                                                        01063100
+      **************************************                            01990000
+      *                                    *                            02000000
+      *  CUERPO FINAL                      *                            02010004
+      *                                    *                            02020000
+      **************************************                            02030000
+       3000-FINAL.                                                      02040004
+           PERFORM  3010-CLOSE-FILES      THRU  3010-CLOSE-FILES-F      02041005
+           PERFORM  3020-MOSTRAR-TOTALES  THRU  3020-MOSTRAR-TOTALES-F  02042005
+           .                                                            02043014
+       3000-FINAL-F. EXIT.                                              02050004
+      **************************************                            02050105
+      *   CERRAR ARCHIVOS                  *                            02050205
+      **************************************                            02050305
+       3010-CLOSE-FILES.                                                02051004
+           CLOSE E1EDADES                                               02060019
+              IF FS-E1EDADES IS NOT EQUAL '00'                          02070019
+                DISPLAY '* ERROR EN CLOSE ARCHIVO = '                   02080019
+                                            FS-E1EDADES                 02090019
+                MOVE 9999 TO RETURN-CODE                                02100000
+                PERFORM 99999-ERROR                                     02111001
+             END-IF                                                     02120005
+           .                                                            02130005
+       3010-CLOSE-FILES-F. EXIT.                                        02131005
+                                                                        02132005
+      **************************************                            02140004
+      *  MOSTRAR TOTALES                   *                            02150004
+      **************************************                            02160004
+       3020-MOSTRAR-TOTALES.                                            02170005
+           DISPLAY ' TOTAL DE ENTRADAS LEIDAS  '  WS-CANT-TOTALES       02180028
+           DISPLAY ' TOTAL DE ENTRADAS MENORES '  WS-CANT-MENORES       02190028
+           DISPLAY ' TOTAL DE ENTRADAS MAYORES '  WS-CANT-MAYORES       02200028
+           .                                                            02210012
+       3020-MOSTRAR-TOTALES-F. EXIT.                                    02220005
+       99999-ERROR. GOBACK.                                             02401001
+      *                                                                 02410000
+
